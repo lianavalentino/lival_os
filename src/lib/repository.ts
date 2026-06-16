@@ -119,9 +119,9 @@ export class SupabaseRepository implements AppRepository {
   async loadData() {
     await this.ensureProfile();
 
-    const existingAreas = await this.fetchTable("areas", "sort_order");
-    if (!existingAreas.length) {
-      await this.bootstrapSeedData();
+    if (shouldRunSeedRepair()) {
+      await this.repairSeedData();
+      markSeedRepairComplete();
     }
 
     const [
@@ -414,184 +414,163 @@ export class SupabaseRepository implements AppRepository {
     if (error) throw error;
   }
 
+  private async repairSeedData() {
+    await this.bootstrapSeedData();
+    await this.deleteDuplicateSeedRows();
+  }
+
   private async bootstrapSeedData() {
     const userId = this.user.id;
-    const idMap = new Map<string, string>();
+    const seedRowId = createSeedRowIdGetter(userId);
 
-    const areas = await insertAndMap(
+    await insertMissingSeedRows(
       this.client,
       "areas",
       seedData.areas.map((area) => ({
-        client_id: area.id,
-        row: {
-          user_id: userId,
-          name: area.name,
-          description: area.description,
-          color: area.color,
-          sort_order: area.sortOrder,
-        },
+        id: seedRowId(area.id),
+        user_id: userId,
+        name: area.name,
+        description: area.description,
+        color: area.color,
+        sort_order: area.sortOrder,
       })),
     );
-    areas.forEach(([clientId, id]) => idMap.set(clientId, id));
 
-    const workspaces = await insertAndMap(
+    await insertMissingSeedRows(
       this.client,
       "workspaces",
       seedData.workspaces.map((workspace) => ({
-        client_id: workspace.id,
-        row: {
-          user_id: userId,
-          area_id: idMap.get(workspace.areaId),
-          name: workspace.name,
-          description: workspace.description,
-          color: workspace.color,
-          sort_order: workspace.sortOrder,
-        },
+        id: seedRowId(workspace.id),
+        user_id: userId,
+        area_id: seedRowId(workspace.areaId),
+        name: workspace.name,
+        description: workspace.description,
+        color: workspace.color,
+        sort_order: workspace.sortOrder,
       })),
     );
-    workspaces.forEach(([clientId, id]) => idMap.set(clientId, id));
 
-    const projects = await insertAndMap(
+    await insertMissingSeedRows(
       this.client,
       "projects",
       seedData.projects.map((project) => ({
-        client_id: project.id,
-        row: {
-          user_id: userId,
-          area_id: idMap.get(project.areaId),
-          workspace_id: idMap.get(project.workspaceId),
-          name: project.name,
-          description: project.description,
-          goal: project.goal,
-          status: project.status,
-          health: project.health,
-          priority: project.priority,
-          progress_percent: project.progressPercent,
-          start_date: project.startDate,
-          target_date: project.targetDate,
-        },
+        id: seedRowId(project.id),
+        user_id: userId,
+        area_id: seedRowId(project.areaId),
+        workspace_id: seedRowId(project.workspaceId),
+        name: project.name,
+        description: project.description,
+        goal: project.goal,
+        status: project.status,
+        health: project.health,
+        priority: project.priority,
+        progress_percent: project.progressPercent,
+        start_date: project.startDate,
+        target_date: project.targetDate,
       })),
     );
-    projects.forEach(([clientId, id]) => idMap.set(clientId, id));
 
-    const tasks = await insertAndMap(
+    await insertMissingSeedRows(
       this.client,
       "tasks",
       seedData.tasks.map((task) => ({
-        client_id: task.id,
-        row: {
-          user_id: userId,
-          area_id: idMap.get(task.areaId),
-          workspace_id: idMap.get(task.workspaceId),
-          project_id: task.projectId ? idMap.get(task.projectId) : null,
-          title: task.title,
-          description: task.description,
-          status: task.status,
-          priority: task.priority,
-          due_date: task.dueDate,
-          scheduled_for: task.scheduledFor,
-          completed_at: task.completedAt,
-          estimated_minutes: task.estimatedMinutes,
-          sort_order: task.sortOrder,
-          labels: task.labels,
-          source: task.source,
-        },
+        id: seedRowId(task.id),
+        user_id: userId,
+        area_id: seedRowId(task.areaId),
+        workspace_id: seedRowId(task.workspaceId),
+        project_id: task.projectId ? seedRowId(task.projectId) : null,
+        title: task.title,
+        description: task.description,
+        status: task.status,
+        priority: task.priority,
+        due_date: task.dueDate,
+        scheduled_for: task.scheduledFor,
+        completed_at: task.completedAt,
+        estimated_minutes: task.estimatedMinutes,
+        sort_order: task.sortOrder,
+        labels: task.labels,
+        source: task.source,
       })),
     );
-    tasks.forEach(([clientId, id]) => idMap.set(clientId, id));
 
-    const timeEntries = await insertAndMap(
+    await insertMissingSeedRows(
       this.client,
       "time_entries",
       seedData.timeEntries.map((entry) => ({
-        client_id: entry.id,
-        row: {
-          user_id: userId,
-          area_id: idMap.get(entry.areaId),
-          workspace_id: idMap.get(entry.workspaceId),
-          project_id: entry.projectId ? idMap.get(entry.projectId) : null,
-          task_id: entry.taskId ? idMap.get(entry.taskId) : null,
-          started_at: entry.startedAt,
-          ended_at: entry.endedAt,
-          duration_minutes: entry.durationMinutes,
-          description: entry.description,
-          source: entry.source,
-        },
+        id: seedRowId(entry.id),
+        user_id: userId,
+        area_id: seedRowId(entry.areaId),
+        workspace_id: seedRowId(entry.workspaceId),
+        project_id: entry.projectId ? seedRowId(entry.projectId) : null,
+        task_id: entry.taskId ? seedRowId(entry.taskId) : null,
+        started_at: entry.startedAt,
+        ended_at: entry.endedAt,
+        duration_minutes: entry.durationMinutes,
+        description: entry.description,
+        source: entry.source,
       })),
     );
-    timeEntries.forEach(([clientId, id]) => idMap.set(clientId, id));
 
-    const inboxItems = await insertAndMap(
+    await insertMissingSeedRows(
       this.client,
       "inbox_items",
       seedData.inboxItems.map((item) => ({
-        client_id: item.id,
-        row: {
-          user_id: userId,
-          type: item.type,
-          title: item.title,
-          body: item.body,
-          source: item.source,
-          source_url: item.sourceUrl,
-          suggested_area_id: item.suggestedAreaId ? idMap.get(item.suggestedAreaId) : null,
-          suggested_workspace_id: item.suggestedWorkspaceId
-            ? idMap.get(item.suggestedWorkspaceId)
-            : null,
-          suggested_project_id: item.suggestedProjectId
-            ? idMap.get(item.suggestedProjectId)
-            : null,
-          suggested_task_id: item.suggestedTaskId ? idMap.get(item.suggestedTaskId) : null,
-          confidence: item.confidence,
-          status: item.status,
-          received_at: item.receivedAt,
-          reviewed_at: item.reviewedAt,
-        },
+        id: seedRowId(item.id),
+        user_id: userId,
+        type: item.type,
+        title: item.title,
+        body: item.body,
+        source: item.source,
+        source_url: item.sourceUrl,
+        suggested_area_id: item.suggestedAreaId ? seedRowId(item.suggestedAreaId) : null,
+        suggested_workspace_id: item.suggestedWorkspaceId
+          ? seedRowId(item.suggestedWorkspaceId)
+          : null,
+        suggested_project_id: item.suggestedProjectId ? seedRowId(item.suggestedProjectId) : null,
+        suggested_task_id: item.suggestedTaskId ? seedRowId(item.suggestedTaskId) : null,
+        confidence: item.confidence,
+        status: item.status,
+        received_at: item.receivedAt,
+        reviewed_at: item.reviewedAt,
       })),
     );
-    inboxItems.forEach(([clientId, id]) => idMap.set(clientId, id));
 
-    const brainDumps = await insertAndMap(
+    await insertMissingSeedRows(
       this.client,
       "brain_dumps",
       seedData.brainDumps.map((entry) => ({
-        client_id: entry.id,
-        row: {
-          user_id: userId,
-          title: entry.title,
-          body: entry.body,
-          category: entry.category,
-          status: entry.status,
-          source: entry.source,
-        },
+        id: seedRowId(entry.id),
+        user_id: userId,
+        title: entry.title,
+        body: entry.body,
+        category: entry.category,
+        status: entry.status,
+        source: entry.source,
       })),
     );
-    brainDumps.forEach(([clientId, id]) => idMap.set(clientId, id));
 
-    const resources = await insertAndMap(
+    await insertMissingSeedRows(
       this.client,
       "resources",
       seedData.resources.map((resource) => ({
-        client_id: resource.id,
-        row: {
-          user_id: userId,
-          area_id: resource.areaId ? idMap.get(resource.areaId) : null,
-          workspace_id: resource.workspaceId ? idMap.get(resource.workspaceId) : null,
-          project_id: resource.projectId ? idMap.get(resource.projectId) : null,
-          title: resource.title,
-          url: resource.url,
-          description: resource.description,
-          category: resource.category,
-          tags: resource.tags,
-          source: resource.source,
-        },
+        id: seedRowId(resource.id),
+        user_id: userId,
+        area_id: resource.areaId ? seedRowId(resource.areaId) : null,
+        workspace_id: resource.workspaceId ? seedRowId(resource.workspaceId) : null,
+        project_id: resource.projectId ? seedRowId(resource.projectId) : null,
+        title: resource.title,
+        url: resource.url,
+        description: resource.description,
+        category: resource.category,
+        tags: resource.tags,
+        source: resource.source,
       })),
     );
-    resources.forEach(([clientId, id]) => idMap.set(clientId, id));
 
-    await insertRows(
+    await insertMissingWeeklySnapshots(
       this.client,
-      "weekly_snapshots",
       seedData.weeklySnapshots.map((snapshot) => ({
+        id: seedRowId(snapshot.id),
         user_id: userId,
         week_start: snapshot.weekStart,
         week_end: snapshot.weekEnd,
@@ -605,13 +584,14 @@ export class SupabaseRepository implements AppRepository {
       })),
     );
 
-    await insertRows(
+    await insertMissingSeedRows(
       this.client,
       "activity_events",
       seedData.activityEvents.map((event) => ({
+        id: seedRowId(event.id),
         user_id: userId,
         entity_type: event.entityType,
-        entity_id: idMap.get(event.entityId) || null,
+        entity_id: seedRowId(event.entityId),
         event_type: event.eventType,
         message: event.message,
         metadata: event.metadata,
@@ -619,30 +599,229 @@ export class SupabaseRepository implements AppRepository {
       })),
     );
   }
+
+  private async deleteDuplicateSeedRows() {
+    const userId = this.user.id;
+    const seedRowId = createSeedRowIdGetter(userId);
+    const canonicalIds = new Set(seedClientIds.map(seedRowId));
+
+    await this.deleteMatchingSeedDuplicates(
+      "activity_events",
+      "id, entity_type, event_type, message",
+      seedData.activityEvents,
+      (row, event) =>
+        text(row.entity_type) === event.entityType &&
+        text(row.event_type) === event.eventType &&
+        text(row.message) === event.message,
+      canonicalIds,
+    );
+    await this.deleteMatchingSeedDuplicates(
+      "resources",
+      "id, title, url, source",
+      seedData.resources,
+      (row, resource) =>
+        text(row.title) === resource.title &&
+        text(row.url) === resource.url &&
+        text(row.source) === resource.source,
+      canonicalIds,
+    );
+    await this.deleteMatchingSeedDuplicates(
+      "time_entries",
+      "id, duration_minutes, description, source",
+      seedData.timeEntries,
+      (row, entry) =>
+        numberValue(row.duration_minutes) === entry.durationMinutes &&
+        text(row.description) === entry.description &&
+        text(row.source) === entry.source,
+      canonicalIds,
+    );
+    await this.deleteMatchingSeedDuplicates(
+      "inbox_items",
+      "id, type, title, source",
+      seedData.inboxItems,
+      (row, item) =>
+        text(row.type) === item.type &&
+        text(row.title) === item.title &&
+        text(row.source) === item.source,
+      canonicalIds,
+    );
+    await this.deleteMatchingSeedDuplicates(
+      "brain_dumps",
+      "id, title, category, source",
+      seedData.brainDumps,
+      (row, entry) =>
+        text(row.title) === entry.title &&
+        text(row.category) === entry.category &&
+        text(row.source) === entry.source,
+      canonicalIds,
+    );
+    await this.deleteMatchingSeedDuplicates(
+      "tasks",
+      "id, title, source, sort_order",
+      seedData.tasks,
+      (row, task) =>
+        text(row.title) === task.title &&
+        text(row.source) === task.source &&
+        numberValue(row.sort_order) === task.sortOrder,
+      canonicalIds,
+    );
+    await this.deleteMatchingSeedDuplicates(
+      "projects",
+      "id, name, goal, priority",
+      seedData.projects,
+      (row, project) =>
+        text(row.name) === project.name &&
+        text(row.goal) === project.goal &&
+        text(row.priority) === project.priority,
+      canonicalIds,
+    );
+    await this.deleteMatchingSeedDuplicates(
+      "workspaces",
+      "id, name, description, sort_order",
+      seedData.workspaces,
+      (row, workspace) =>
+        text(row.name) === workspace.name &&
+        text(row.description) === workspace.description &&
+        numberValue(row.sort_order) === workspace.sortOrder,
+      canonicalIds,
+    );
+    await this.deleteMatchingSeedDuplicates(
+      "areas",
+      "id, name, description, sort_order",
+      seedData.areas,
+      (row, area) =>
+        text(row.name) === area.name &&
+        text(row.description) === area.description &&
+        numberValue(row.sort_order) === area.sortOrder,
+      canonicalIds,
+    );
+  }
+
+  private async deleteMatchingSeedDuplicates<TSeed>(
+    table: string,
+    selectColumns: string,
+    seeds: TSeed[],
+    matchesSeed: (row: DbRow, seed: TSeed) => boolean,
+    canonicalIds: Set<string>,
+  ) {
+    const { data, error } = await this.client
+      .from(table)
+      .select(selectColumns)
+      .eq("user_id", this.user.id);
+    if (error) throw error;
+
+    const rows = (data || []) as unknown as DbRow[];
+    const duplicateIds = rows
+      .filter((row) => {
+        const id = text(row.id);
+        return id && !canonicalIds.has(id) && seeds.some((seed) => matchesSeed(row, seed));
+      })
+      .map((row) => text(row.id));
+
+    if (!duplicateIds.length) return;
+
+    const { error: deleteError } = await this.client.from(table).delete().in("id", duplicateIds);
+    if (deleteError) throw deleteError;
+  }
 }
 
-async function insertRows(
+async function insertMissingSeedRows(
   client: SupabaseClient,
   table: string,
   rows: Record<string, unknown>[],
 ) {
   if (!rows.length) return [];
-  const { data, error } = await client.from(table).insert(rows).select("id");
+  const { data, error } = await client
+    .from(table)
+    .upsert(rows, { ignoreDuplicates: true, onConflict: "id" })
+    .select("id");
   if (error) throw error;
   return data || [];
 }
 
-async function insertAndMap(
-  client: SupabaseClient,
-  table: string,
-  items: Array<{ client_id: string; row: Record<string, unknown> }>,
-) {
-  const rows = items.map((item) => item.row);
-  const inserted = await insertRows(client, table, rows);
-  return items.map((item, index) => [item.client_id, inserted[index].id] as const);
+type DbRow = Record<string, unknown>;
+
+const seedRepairSessionKey = "lival_os_seed_repair_v2_complete";
+
+const seedClientIds = [
+  ...seedData.areas,
+  ...seedData.workspaces,
+  ...seedData.projects,
+  ...seedData.tasks,
+  ...seedData.timeEntries,
+  ...seedData.inboxItems,
+  ...seedData.brainDumps,
+  ...seedData.resources,
+  ...seedData.weeklySnapshots,
+  ...seedData.activityEvents,
+].map((item) => item.id);
+
+function createSeedRowIdGetter(userId: string) {
+  const idMap = new Map(seedClientIds.map((id) => [id, deterministicSeedId(userId, id)]));
+  return (id: string) => {
+    const value = idMap.get(id);
+    if (!value) throw new Error(`Missing seed ID for ${id}`);
+    return value;
+  };
 }
 
-type DbRow = Record<string, unknown>;
+function shouldRunSeedRepair() {
+  try {
+    return globalThis.sessionStorage?.getItem(seedRepairSessionKey) !== "true";
+  } catch {
+    return true;
+  }
+}
+
+function markSeedRepairComplete() {
+  try {
+    globalThis.sessionStorage?.setItem(seedRepairSessionKey, "true");
+  } catch {
+    // If browser storage is unavailable, keep the repair path conservative on the next load.
+  }
+}
+
+async function insertMissingWeeklySnapshots(
+  client: SupabaseClient,
+  rows: Record<string, unknown>[],
+) {
+  if (!rows.length) return [];
+  const weekStarts = rows.map((row) => text(row.week_start)).filter(Boolean);
+  const { data: existing, error: selectError } = await client
+    .from("weekly_snapshots")
+    .select("week_start")
+    .in("week_start", weekStarts);
+  if (selectError) throw selectError;
+
+  const existingWeeks = new Set((existing || []).map((row) => text(row.week_start)));
+  return insertMissingSeedRows(
+    client,
+    "weekly_snapshots",
+    rows.filter((row) => !existingWeeks.has(text(row.week_start))),
+  );
+}
+
+function deterministicSeedId(userId: string, seedId: string) {
+  const hash = fnv1a128(`${userId}:${seedId}`);
+  const variant = ((parseInt(hash[16], 16) & 0x3) | 0x8).toString(16);
+  return `${hash.slice(0, 8)}-${hash.slice(8, 12)}-4${hash.slice(
+    13,
+    16,
+  )}-${variant}${hash.slice(17, 20)}-${hash.slice(20, 32)}`;
+}
+
+function fnv1a128(value: string) {
+  let hash = 0x6c62272e07bb014262b821756295c58dn;
+  const prime = 0x0000000001000000000000000000013bn;
+  const mask = (1n << 128n) - 1n;
+
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= BigInt(value.charCodeAt(index));
+    hash = (hash * prime) & mask;
+  }
+
+  return hash.toString(16).padStart(32, "0");
+}
 
 const text = (value: unknown, fallback = "") =>
   typeof value === "string" ? value : fallback;

@@ -13,19 +13,19 @@ The app runs in explicit local demo mode when Supabase environment variables are
 
 ## Supabase Setup
 
-Project name: `LIVAL_OS`
+Project name: `LIVAL_OS` · ref: `mfcdzgkhmzppfctdzhwy`
 
-1. Create or open the Supabase project.
-2. Apply `supabase/migrations/001_lival_os_initial_schema.sql` in the Supabase SQL editor or with the Supabase CLI.
-3. Enable email authentication for the private user.
-4. Copy `.env.example` to `.env.local` and fill in:
+**Status: migration applied, credentials in `.env.local`.**
 
-```bash
-VITE_SUPABASE_URL=...
-VITE_SUPABASE_ANON_KEY=...
-```
+1. Migration `supabase/migrations/001_lival_os_initial_schema.sql` already applied to the project.
+2. Enable email auth: Supabase dashboard → Authentication → Providers → Email.
+3. `.env.local` already configured with URL and anon key.
 
-Do not commit database passwords, service-role keys, or `.env.local`.
+To set up from scratch on a new machine:
+- Copy `.env.example` to `.env.local` and fill in URL + anon key from dashboard → Settings → API Keys → Legacy.
+- Re-apply the migration via the SQL editor.
+
+Do not commit `.env.local`, service-role keys, or database passwords.
 
 When `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are present, the app shows an email/password auth screen, restores sessions on reload, creates/updates the signed-in profile, bootstraps starter data once for the user, and reads/writes through Supabase with RLS. When they are absent, the same UI uses demo persistence only.
 

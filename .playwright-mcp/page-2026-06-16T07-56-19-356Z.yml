@@ -1,0 +1,270 @@
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: LV
+      - generic [ref=e7]:
+        - strong [ref=e8]: LIVAL OS
+        - generic [ref=e9]: Personal command system
+    - navigation "Primary navigation" [ref=e10]:
+      - button "Command" [ref=e11] [cursor=pointer]:
+        - img [ref=e12]
+        - generic [ref=e17]: Command
+      - button "Daily" [ref=e18] [cursor=pointer]:
+        - img [ref=e19]
+        - generic [ref=e21]: Daily
+      - button "Weekly" [ref=e22] [cursor=pointer]:
+        - img [ref=e23]
+        - generic [ref=e27]: Weekly
+      - button "Board" [ref=e28] [cursor=pointer]:
+        - img [ref=e29]
+        - generic [ref=e31]: Board
+      - button "Projects" [ref=e32] [cursor=pointer]:
+        - img [ref=e33]
+        - generic [ref=e35]: Projects
+      - button "Inbox" [ref=e36] [cursor=pointer]:
+        - img [ref=e37]
+        - generic [ref=e40]: Inbox
+      - button "Brain Dump" [ref=e41] [cursor=pointer]:
+        - img [ref=e42]
+        - generic [ref=e52]: Brain Dump
+      - button "Resources" [ref=e53] [cursor=pointer]:
+        - img [ref=e54]
+        - generic [ref=e57]: Resources
+      - button "Reports" [ref=e58] [cursor=pointer]:
+        - img [ref=e59]
+        - generic [ref=e61]: Reports
+      - button "Archive" [ref=e62] [cursor=pointer]:
+        - img [ref=e63]
+        - generic [ref=e66]: Archive
+      - button "Settings" [ref=e67] [cursor=pointer]:
+        - img [ref=e68]
+        - generic [ref=e71]: Settings
+    - generic [ref=e72]:
+      - generic [ref=e73]:
+        - img [ref=e74]
+        - generic [ref=e77]: Weekly Time
+      - strong [ref=e78]: 3h 20m
+      - generic [ref=e79]: 3 active projects
+    - button "Quick Capture" [ref=e80] [cursor=pointer]:
+      - img [ref=e81]
+      - text: Quick Capture
+  - main [ref=e82]:
+    - generic [ref=e83]:
+      - generic [ref=e84]:
+        - heading "Command Center" [level=1] [ref=e85]
+        - paragraph [ref=e86]: Top priorities, review queues, progress, and time in one scan.
+      - generic [ref=e87]:
+        - generic [ref=e88]: Demo mode
+        - generic [ref=e89]:
+          - img [ref=e90]
+          - generic [ref=e93]: Search anything
+        - button "Capture" [ref=e94] [cursor=pointer]:
+          - img [ref=e95]
+          - text: Capture
+    - generic [ref=e96]:
+      - generic [ref=e97]:
+        - generic [ref=e98]:
+          - generic [ref=e99]:
+            - img [ref=e100]
+            - heading "Today's Top 3" [level=2] [ref=e104]
+          - button "Open board" [ref=e105] [cursor=pointer]:
+            - text: Open board
+            - img [ref=e106]
+        - generic [ref=e108]:
+          - button "1 Wire Supabase tables and RLS LIVAL OS MVP high" [ref=e109] [cursor=pointer]:
+            - generic [ref=e110]: "1"
+            - generic [ref=e111]:
+              - strong [ref=e112]: Wire Supabase tables and RLS
+              - generic [ref=e113]: LIVAL OS MVP
+            - generic [ref=e114]: high
+          - button "2 Review calculator assumptions with client language Enertia ROI Calculator high" [ref=e115] [cursor=pointer]:
+            - generic [ref=e116]: "2"
+            - generic [ref=e117]:
+              - strong [ref=e118]: Review calculator assumptions with client language
+              - generic [ref=e119]: Enertia ROI Calculator
+            - generic [ref=e120]: high
+          - button "3 Draft Buffer channel field map Content Automation Stack medium" [ref=e121] [cursor=pointer]:
+            - generic [ref=e122]: "3"
+            - generic [ref=e123]:
+              - strong [ref=e124]: Draft Buffer channel field map
+              - generic [ref=e125]: Content Automation Stack
+            - generic [ref=e126]: medium
+      - generic [ref=e127]:
+        - generic [ref=e128]:
+          - generic [ref=e129]:
+            - img [ref=e130]
+            - heading "Inbox Overview" [level=2] [ref=e133]
+          - button "Review" [ref=e134] [cursor=pointer]:
+            - text: Review
+            - img [ref=e135]
+        - generic [ref=e137]:
+          - generic [ref=e138]:
+            - strong [ref=e139]: "2"
+            - generic [ref=e140]: New
+          - generic [ref=e141]:
+            - strong [ref=e142]: "1"
+            - generic [ref=e143]: Ideas
+          - generic [ref=e144]:
+            - strong [ref=e145]: "1"
+            - generic [ref=e146]: Resources
+      - generic [ref=e147]:
+        - generic [ref=e148]:
+          - generic [ref=e149]:
+            - img [ref=e150]
+            - heading "Board Preview" [level=2] [ref=e152]
+          - button "View full board" [ref=e153] [cursor=pointer]:
+            - text: View full board
+            - img [ref=e154]
+        - generic [ref=e156]:
+          - generic [ref=e157]:
+            - generic [ref=e158]:
+              - strong [ref=e159]: Backlog
+              - generic [ref=e160]: "1"
+            - button "Apply to 5 AI automation roles Applications medium 2026-06-23" [ref=e161] [cursor=pointer]:
+              - strong [ref=e162]: Apply to 5 AI automation roles
+              - generic [ref=e163]: Applications
+              - generic [ref=e164]:
+                - generic [ref=e165]: medium
+                - emphasis [ref=e166]: 2026-06-23
+          - generic [ref=e167]:
+            - generic [ref=e168]:
+              - strong [ref=e169]: This Week
+              - generic [ref=e170]: "2"
+            - button "Review calculator assumptions with client language ETD high 2026-06-17" [ref=e171] [cursor=pointer]:
+              - strong [ref=e172]: Review calculator assumptions with client language
+              - generic [ref=e173]: ETD
+              - generic [ref=e174]:
+                - generic [ref=e175]: high
+                - emphasis [ref=e176]: 2026-06-17
+            - button "Schedule routine appointment Admin low 2026-06-23" [ref=e177] [cursor=pointer]:
+              - strong [ref=e178]: Schedule routine appointment
+              - generic [ref=e179]: Admin
+              - generic [ref=e180]:
+                - generic [ref=e181]: low
+                - emphasis [ref=e182]: 2026-06-23
+          - generic [ref=e183]:
+            - generic [ref=e184]:
+              - strong [ref=e185]: In Progress
+              - generic [ref=e186]: "1"
+            - button "Wire Supabase tables and RLS LIVAL OS high 2026-06-16" [ref=e187] [cursor=pointer]:
+              - strong [ref=e188]: Wire Supabase tables and RLS
+              - generic [ref=e189]: LIVAL OS
+              - generic [ref=e190]:
+                - generic [ref=e191]: high
+                - emphasis [ref=e192]: 2026-06-16
+          - generic [ref=e193]:
+            - generic [ref=e194]:
+              - strong [ref=e195]: Blocked
+              - generic [ref=e196]: "1"
+            - button "Draft Buffer channel field map Emergent medium 2026-06-23" [ref=e197] [cursor=pointer]:
+              - strong [ref=e198]: Draft Buffer channel field map
+              - generic [ref=e199]: Emergent
+              - generic [ref=e200]:
+                - generic [ref=e201]: medium
+                - emphasis [ref=e202]: 2026-06-23
+          - generic [ref=e203]:
+            - generic [ref=e204]:
+              - strong [ref=e205]: Done
+              - generic [ref=e206]: "1"
+            - button "Record mobile capture QA notes LIVAL OS medium" [ref=e207] [cursor=pointer]:
+              - strong [ref=e208]: Record mobile capture QA notes
+              - generic [ref=e209]: LIVAL OS
+              - generic [ref=e211]: medium
+          - generic [ref=e212]:
+            - generic [ref=e213]:
+              - strong [ref=e214]: Quick Stats
+              - generic [ref=e215]: "5"
+            - generic [ref=e216]:
+              - generic [ref=e217]:
+                - term [ref=e218]: Active Projects
+                - definition [ref=e219]: "3"
+              - generic [ref=e220]:
+                - term [ref=e221]: Tasks This Week
+                - definition [ref=e222]: "2"
+              - generic [ref=e223]:
+                - term [ref=e224]: Blocked Tasks
+                - definition [ref=e225]: "1"
+              - generic [ref=e226]:
+                - term [ref=e227]: Ideas Captured
+                - definition [ref=e228]: "2"
+      - generic [ref=e229]:
+        - generic [ref=e231]:
+          - img [ref=e232]
+          - heading "Quick Capture" [level=2] [ref=e233]
+        - generic [ref=e234]:
+          - button "Task" [ref=e235] [cursor=pointer]
+          - button "Idea" [ref=e236] [cursor=pointer]
+          - button "Resource" [ref=e237] [cursor=pointer]
+        - button "Open Capture" [ref=e238] [cursor=pointer]:
+          - img [ref=e239]
+          - text: Open Capture
+      - generic [ref=e240]:
+        - generic [ref=e242]:
+          - img [ref=e243]
+          - heading "Weekly Progress" [level=2] [ref=e246]
+        - generic [ref=e247]:
+          - strong [ref=e248]: "1"
+          - generic [ref=e249]: Tasks completed
+        - generic [ref=e250]:
+          - generic [ref=e251]:
+            - generic [ref=e252]: Consulting
+            - strong [ref=e254]: "0"
+          - generic [ref=e255]:
+            - generic [ref=e256]: Build Lab
+            - strong [ref=e258]: "1"
+          - generic [ref=e259]:
+            - generic [ref=e260]: Job Search
+            - strong [ref=e262]: "0"
+          - generic [ref=e263]:
+            - generic [ref=e264]: Life Admin
+            - strong [ref=e266]: "0"
+        - button "View full report" [ref=e267] [cursor=pointer]
+      - generic [ref=e268]:
+        - generic [ref=e270]:
+          - img [ref=e271]
+          - heading "Time Tracking This Week" [level=2] [ref=e274]
+        - generic [ref=e275]: 3h 20m
+        - generic [ref=e276]:
+          - generic [ref=e278]: Enertia ROI Calculator
+          - generic [ref=e282]: Content Automation Stack
+          - generic [ref=e286]: LIVAL OS MVP
+          - generic [ref=e290]: AI Ops Role Pipeline
+      - generic [ref=e293]:
+        - generic [ref=e295]:
+          - img [ref=e296]
+          - heading "Quick Stats" [level=2] [ref=e298]
+        - generic [ref=e299]:
+          - generic [ref=e300]:
+            - strong [ref=e301]: "5"
+            - generic [ref=e302]: Active tasks
+          - generic [ref=e303]:
+            - strong [ref=e304]: "3"
+            - generic [ref=e305]: Projects
+          - generic [ref=e306]:
+            - strong [ref=e307]: "2"
+            - generic [ref=e308]: Captured ideas
+      - generic [ref=e309]:
+        - generic [ref=e311]:
+          - img [ref=e312]
+          - heading "Active Projects" [level=2] [ref=e314]
+        - generic [ref=e315]:
+          - button "on track Enertia ROI Calculator ETD 82% complete" [ref=e316] [cursor=pointer]:
+            - generic [ref=e317]: on track
+            - strong [ref=e318]: Enertia ROI Calculator
+            - generic [ref=e319]: ETD
+            - generic "82% complete" [ref=e320]
+          - button "attention Content Automation Stack Emergent 46% complete" [ref=e322] [cursor=pointer]:
+            - generic [ref=e323]: attention
+            - strong [ref=e324]: Content Automation Stack
+            - generic [ref=e325]: Emergent
+            - generic "46% complete" [ref=e326]
+          - button "on track LIVAL OS MVP LIVAL OS 58% complete" [ref=e328] [cursor=pointer]:
+            - generic [ref=e329]: on track
+            - strong [ref=e330]: LIVAL OS MVP
+            - generic [ref=e331]: LIVAL OS
+            - generic "58% complete" [ref=e332]
+          - button "attention AI Ops Role Pipeline Applications 24% complete" [ref=e334] [cursor=pointer]:
+            - generic [ref=e335]: attention
+            - strong [ref=e336]: AI Ops Role Pipeline
+            - generic [ref=e337]: Applications
+            - generic "24% complete" [ref=e338]
