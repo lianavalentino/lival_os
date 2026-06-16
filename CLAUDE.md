@@ -5,7 +5,7 @@ Private personal operating system: daily orientation, task capture, project visi
 
 ## Stack
 - Vite + React 19 + TypeScript
-- Tailwind CSS (inline via styles.css)
+- Custom CSS (hand-written CSS variables in `src/styles.css` — no Tailwind, no PostCSS, no build-time CSS framework)
 - Supabase (auth + Postgres) — project `LIVAL_OS`, ref `mfcdzgkhmzppfctdzhwy`
 - `@supabase/supabase-js` v2.50+
 - lucide-react icons, date-fns
@@ -15,6 +15,11 @@ Private personal operating system: daily orientation, task capture, project visi
 - Supabase: connected. Migration `001_lival_os_initial_schema.sql` applied.
 - Auth: email/password via Supabase Auth (enable in dashboard → Authentication → Providers → Email). User needs to create account on first run ("First setup? Create account").
 - App runs on `npm run dev` → http://localhost:5173
+
+## PRD Alignment
+- Framework decision (2026-06-16): staying on Vite + React SPA — **not** porting to Next.js. Resolved per explicit instruction to preserve working code and make the smallest safe changes.
+- `docs/CLAUDE.md` and `docs/LIVAL_OS_Supabase_Vercel_App_Spec.md` describe a Next.js + Tailwind + shadcn/ui target architecture. Treat both as a superseded reference, not the active build plan.
+- `docs/PRD_Gap_Audit.md` is the live remediation roadmap. See `docs/superpowers/specs/2026-06-16-prd-phase0-1-alignment-design.md` for the Phase 0/1 design and `supabase/migrations/002_add_planning_and_integration_tables.sql` for the Phase 1 schema additions.
 
 ## Env
 `.env.local` (never commit):
