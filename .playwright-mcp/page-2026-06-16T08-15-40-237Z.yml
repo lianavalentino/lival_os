@@ -1,0 +1,252 @@
+- generic [ref=e1]:
+  - generic [ref=e4]:
+    - banner [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - link "Supabase" [ref=e9] [cursor=pointer]:
+            - /url: /dashboard/org/mvuaquirgtgvosiarlpi
+            - img "Supabase" [ref=e10]
+          - generic [ref=e11]:
+            - img [ref=e137]
+            - generic [ref=e139]:
+              - link "valentinointelligence Free" [ref=e140] [cursor=pointer]:
+                - /url: /dashboard/org/mvuaquirgtgvosiarlpi
+                - img [ref=e141]
+                - generic [ref=e151]: valentinointelligence
+                - generic [ref=e152]: Free
+              - button [ref=e153] [cursor=pointer]:
+                - img [ref=e155]
+            - generic [ref=e12]:
+              - img [ref=e14]
+              - generic [ref=e158]:
+                - link "LIVAL_OS" [ref=e159] [cursor=pointer]:
+                  - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy
+                  - img [ref=e160]
+                  - generic "LIVAL_OS" [ref=e163]
+                - button [ref=e164] [cursor=pointer]:
+                  - img [ref=e166]
+              - img [ref=e170]
+              - generic [ref=e172]:
+                - link "main Production" [ref=e173] [cursor=pointer]:
+                  - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy
+                  - generic "main" [ref=e174]
+                  - generic [ref=e175]: Production
+                - button [ref=e176] [cursor=pointer]:
+                  - img [ref=e178]
+          - button "Connect" [ref=e181] [cursor=pointer]:
+            - img [ref=e183]
+            - generic [ref=e185]: Connect
+        - generic [ref=e23]:
+          - generic [ref=e25] [cursor=pointer]: Feedback
+          - generic [ref=e26]:
+            - button "Search..." [ref=e27]:
+              - generic [ref=e28]:
+                - img [ref=e29]
+                - paragraph [ref=e32]: Search...
+              - generic [ref=e34]: ⌘K
+            - button "Help" [ref=e35] [cursor=pointer]:
+              - generic [ref=e36]:
+                - img [ref=e37]
+                - generic [ref=e40]: Help
+            - button "Advisor Center" [ref=e42] [cursor=pointer]:
+              - generic [ref=e43]:
+                - img [ref=e44]
+                - generic [ref=e46]: Advisor Center
+            - button "SQL Editor" [ref=e47] [cursor=pointer]:
+              - generic [ref=e48]:
+                - img [ref=e49]
+                - generic [ref=e51]: SQL Editor
+            - button "AI Assistant" [ref=e52] [cursor=pointer]:
+              - generic [ref=e53]:
+                - img [ref=e56]
+                - generic [ref=e59]: AI Assistant
+          - button "lianavalentino" [ref=e60] [cursor=pointer]:
+            - img "lianavalentino" [ref=e62]
+    - generic [ref=e63]:
+      - generic [ref=e67]:
+        - list [ref=e70]:
+          - generic [ref=e71]:
+            - listitem [ref=e72]:
+              - link "Project Overview" [ref=e73] [cursor=pointer]:
+                - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy
+                - img [ref=e74]
+                - generic: Project Overview
+            - listitem [ref=e76]:
+              - link "Table Editor" [ref=e186] [cursor=pointer]:
+                - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/editor
+                - img [ref=e187]
+                - generic: Table Editor
+            - listitem [ref=e77]:
+              - link "SQL Editor" [ref=e189] [cursor=pointer]:
+                - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/sql
+                - img [ref=e190]
+                - generic: SQL Editor
+          - generic [ref=e78]:
+            - listitem [ref=e79]:
+              - link "Database" [ref=e192] [cursor=pointer]:
+                - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/database/schemas
+                - img [ref=e193]
+                - generic: Database
+            - listitem [ref=e80]:
+              - link "Authentication" [ref=e197] [cursor=pointer]:
+                - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/auth/users
+                - img [ref=e198]
+                - generic: Authentication
+            - listitem [ref=e81]:
+              - link "Storage" [ref=e200] [cursor=pointer]:
+                - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/storage/files
+                - img [ref=e201]
+                - generic: Storage
+            - listitem [ref=e82]:
+              - link "Edge Functions" [ref=e83] [cursor=pointer]:
+                - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/functions
+                - img [ref=e84]
+                - generic: Edge Functions
+            - listitem [ref=e89]:
+              - link "Realtime" [ref=e203] [cursor=pointer]:
+                - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/realtime/inspector
+                - img [ref=e204]
+                - generic: Realtime
+          - generic [ref=e90]:
+            - listitem [ref=e92]:
+              - link "Advisors" [ref=e206] [cursor=pointer]:
+                - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/advisors/security
+                - img [ref=e207]
+                - generic: Advisors
+            - listitem [ref=e93]:
+              - link "Observability" [ref=e209] [cursor=pointer]:
+                - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/observability
+                - img [ref=e210]
+                - generic: Observability
+            - listitem [ref=e94]:
+              - link "Logs" [ref=e95] [cursor=pointer]:
+                - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/logs/explorer
+                - img [ref=e96]
+                - generic: Logs
+            - listitem [ref=e97]:
+              - link "Integrations" [ref=e218] [cursor=pointer]:
+                - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/integrations
+                - img [ref=e219]
+                - generic: Integrations
+          - listitem [ref=e99]:
+            - link "Project Settings" [ref=e100] [cursor=pointer]:
+              - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/settings/general
+              - img [ref=e101]
+              - generic: Project Settings
+        - button "Sidebar control" [ref=e106] [cursor=pointer]:
+          - img [ref=e108]
+      - generic [ref=e115]:
+        - generic [ref=e222]:
+          - heading "SQL Editor" [level=4] [ref=e224]
+          - generic [ref=e226]:
+            - generic [ref=e227]:
+              - generic [ref=e228]:
+                - generic [ref=e230]:
+                  - generic [ref=e231]: Search queries
+                  - textbox "Search queries..." [ref=e232]
+                  - button [ref=e233]:
+                    - img [ref=e234]
+                  - img [ref=e237]
+                - button [ref=e240] [cursor=pointer]:
+                  - img [ref=e242]
+              - button "Shared" [ref=e245]:
+                - img [ref=e246]
+                - generic [ref=e248]: Shared
+              - button "Favorites" [ref=e251]:
+                - img [ref=e252]
+                - generic [ref=e254]: Favorites
+              - generic [ref=e256]:
+                - button "PRIVATE (2)" [expanded] [ref=e385]:
+                  - img [ref=e258]
+                  - generic [ref=e260]: PRIVATE (2)
+                - tree "private-snippets" [ref=e262]:
+                  - generic "Untitled query" [ref=e386] [cursor=pointer]:
+                    - generic [ref=e388]:
+                      - img [ref=e389]
+                      - generic [ref=e395]: Untitled query
+                  - generic "Untitled query" [ref=e263] [cursor=pointer]:
+                    - generic [ref=e264]:
+                      - img [ref=e265]
+                      - generic [ref=e271]: Untitled query
+              - generic [ref=e273]:
+                - button "Reference" [expanded] [ref=e274]:
+                  - img [ref=e275]
+                  - generic [ref=e277]: Reference
+                - generic [ref=e278]:
+                  - link "templates" [ref=e279] [cursor=pointer]:
+                    - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/sql/templates
+                    - img [ref=e280]
+                    - text: templates
+                  - link "examples" [ref=e282] [cursor=pointer]:
+                    - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/sql/examples
+                    - img [ref=e283]
+                    - text: examples
+            - button "View running queries" [ref=e287] [cursor=pointer]:
+              - generic [ref=e288]: View running queries
+        - separator [ref=e119]:
+          - img [ref=e121]
+        - main [ref=e130]:
+          - generic [ref=e289]:
+            - generic [ref=e290]:
+              - generic [ref=e291]:
+                - button "Collapse sidebar" [ref=e292]:
+                  - img [ref=e293]
+                  - generic [ref=e296]: Collapse sidebar
+                - tablist [ref=e297]:
+                  - button "Untitled query" [ref=e397]:
+                    - tab "Untitled query" [selected] [ref=e398]:
+                      - img [ref=e399]
+                      - generic [ref=e406]: Untitled query
+                      - button [ref=e407] [cursor=pointer]:
+                        - img [ref=e408]
+                    - separator [ref=e412]
+                  - button [ref=e413]:
+                    - img [ref=e414]
+              - status [ref=e308]
+            - generic [ref=e311]:
+              - code [ref=e318]:
+                - generic [ref=e319]:
+                  - generic [ref=e424]: "179"
+                  - generic [ref=e427]: end $$;
+                  - textbox "Editor content" [active] [ref=e331]: create extension if not exists pgcrypto; create or replace function public.set_updated_at() returns trigger language plpgsql as $$ begin new.updated_at = now(); return new; end; $$; create table if not exists public.profiles ( id uuid primary key references auth.users(id) on delete cascade, email text not null, display_name text, avatar_url text,
+              - separator [ref=e332]:
+                - img [ref=e334]
+              - generic [ref=e343]:
+                - tablist [ref=e344]:
+                  - generic [ref=e345]:
+                    - tab "Results" [selected] [ref=e346]:
+                      - generic [ref=e347]: Results
+                    - tab "Explain" [ref=e348]:
+                      - generic [ref=e349]: Explain
+                    - tab "Chart" [ref=e350]:
+                      - generic [ref=e351]: Chart
+                    - button "Export" [disabled]:
+                      - generic: Export
+                      - generic:
+                        - img
+                  - generic [ref=e352]:
+                    - button [ref=e353] [cursor=pointer]:
+                      - img [ref=e355]
+                    - generic [ref=e360]:
+                      - generic [ref=e361] [cursor=pointer]:
+                        - generic [ref=e362]: Source
+                        - button "Primary database" [ref=e363]:
+                          - generic [ref=e364]: Primary database
+                          - img [ref=e366]
+                      - button "Role postgres" [ref=e368] [cursor=pointer]:
+                        - generic [ref=e370]:
+                          - generic [ref=e371]: Role
+                          - generic [ref=e372]: postgres
+                          - img [ref=e373]
+                      - button "Run ⌘↵" [ref=e375] [cursor=pointer]:
+                        - generic [ref=e376]: Run
+                        - generic [ref=e429]: ⌘↵
+                - paragraph [ref=e430]: Success. No rows returned
+              - generic "Table grid footer" [ref=e431]:
+                - button "0 row" [ref=e432]:
+                  - paragraph [ref=e433]:
+                    - generic [ref=e434]: 0 row
+  - alert [ref=e135]: SQL Editor | LIVAL_OS | valentinointelligence | Supabase
+  - generic [ref=e383]:
+    - alert
+    - alert

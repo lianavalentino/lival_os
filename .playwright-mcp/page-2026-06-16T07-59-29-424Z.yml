@@ -1,0 +1,306 @@
+- generic [ref=e1]:
+  - generic [ref=e4]:
+    - banner [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - link "Supabase" [ref=e9] [cursor=pointer]:
+            - /url: /dashboard/org/mvuaquirgtgvosiarlpi
+            - img "Supabase" [ref=e10]
+          - generic [ref=e11]:
+            - img [ref=e211]
+            - generic [ref=e213]:
+              - link "valentinointelligence Free" [ref=e214] [cursor=pointer]:
+                - /url: /dashboard/org/mvuaquirgtgvosiarlpi
+                - img [ref=e215]
+                - generic [ref=e225]: valentinointelligence
+                - generic [ref=e226]: Free
+              - button [ref=e227] [cursor=pointer]:
+                - img [ref=e229]
+            - generic [ref=e12]:
+              - img [ref=e14]
+              - generic [ref=e232]:
+                - link "LIVAL_OS" [ref=e233] [cursor=pointer]:
+                  - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy
+                  - img [ref=e234]
+                  - generic "LIVAL_OS" [ref=e237]
+                - button [ref=e238] [cursor=pointer]:
+                  - img [ref=e240]
+              - img [ref=e244]
+              - generic [ref=e246]:
+                - link "main Production" [ref=e247] [cursor=pointer]:
+                  - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy
+                  - generic "main" [ref=e248]
+                  - generic [ref=e249]: Production
+                - button [ref=e250] [cursor=pointer]:
+                  - img [ref=e252]
+          - button "Connect" [ref=e255] [cursor=pointer]:
+            - img [ref=e257]
+            - generic [ref=e259]: Connect
+        - generic [ref=e23]:
+          - generic [ref=e25] [cursor=pointer]: Feedback
+          - generic [ref=e26]:
+            - button "Search..." [ref=e27]:
+              - generic [ref=e28]:
+                - img [ref=e29]
+                - paragraph [ref=e32]: Search...
+              - generic [ref=e34]: ⌘K
+            - button "Help" [ref=e35] [cursor=pointer]:
+              - generic [ref=e36]:
+                - img [ref=e37]
+                - generic [ref=e40]: Help
+            - button "Advisor Center" [ref=e42] [cursor=pointer]:
+              - generic [ref=e43]:
+                - img [ref=e44]
+                - generic [ref=e46]: Advisor Center
+            - button "SQL Editor" [ref=e47] [cursor=pointer]:
+              - generic [ref=e48]:
+                - img [ref=e49]
+                - generic [ref=e51]: SQL Editor
+            - button "AI Assistant" [ref=e52] [cursor=pointer]:
+              - generic [ref=e53]:
+                - img [ref=e56]
+                - generic [ref=e59]: AI Assistant
+          - button "lianavalentino" [ref=e260] [cursor=pointer]:
+            - img "lianavalentino" [ref=e261]
+    - generic [ref=e65]:
+      - generic [ref=e69]:
+        - list [ref=e72]:
+          - generic [ref=e73]:
+            - listitem [ref=e74]:
+              - link "Project Overview" [ref=e75] [cursor=pointer]:
+                - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy
+                - img [ref=e76]
+                - generic [ref=e262]: Project Overview
+            - listitem [ref=e78]:
+              - link "Table Editor" [ref=e263] [cursor=pointer]:
+                - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/editor
+                - img [ref=e264]
+                - generic [ref=e266]: Table Editor
+            - listitem [ref=e79]:
+              - link "SQL Editor" [ref=e267] [cursor=pointer]:
+                - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/sql
+                - img [ref=e268]
+                - generic [ref=e270]: SQL Editor
+          - generic [ref=e80]:
+            - listitem [ref=e81]:
+              - link "Database" [ref=e271] [cursor=pointer]:
+                - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/database/schemas
+                - img [ref=e272]
+                - generic [ref=e276]: Database
+            - listitem [ref=e82]:
+              - link "Authentication" [ref=e277] [cursor=pointer]:
+                - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/auth/users
+                - img [ref=e278]
+                - generic [ref=e280]: Authentication
+            - listitem [ref=e83]:
+              - link "Storage" [ref=e281] [cursor=pointer]:
+                - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/storage/files
+                - img [ref=e282]
+                - generic [ref=e284]: Storage
+            - listitem [ref=e84]:
+              - link "Edge Functions" [ref=e85] [cursor=pointer]:
+                - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/functions
+                - img [ref=e86]
+                - generic [ref=e285]: Edge Functions
+            - listitem [ref=e91]:
+              - link "Realtime" [ref=e286] [cursor=pointer]:
+                - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/realtime/inspector
+                - img [ref=e287]
+                - generic [ref=e289]: Realtime
+          - generic [ref=e92]:
+            - listitem [ref=e94]:
+              - link "Advisors" [ref=e290] [cursor=pointer]:
+                - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/advisors/security
+                - img [ref=e291]
+                - generic [ref=e293]: Advisors
+            - listitem [ref=e95]:
+              - link "Observability" [ref=e294] [cursor=pointer]:
+                - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/observability
+                - img [ref=e295]
+                - generic [ref=e303]: Observability
+            - listitem [ref=e96]:
+              - link "Logs" [ref=e97] [cursor=pointer]:
+                - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/logs/explorer
+                - img [ref=e98]
+                - generic [ref=e304]: Logs
+            - listitem [ref=e99]:
+              - link "Integrations" [ref=e305] [cursor=pointer]:
+                - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/integrations
+                - img [ref=e306]
+                - generic [ref=e309]: Integrations
+          - listitem [ref=e101]:
+            - link "Project Settings" [active] [ref=e102] [cursor=pointer]:
+              - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/settings/general
+              - img [ref=e103]
+              - generic [ref=e310]: Project Settings
+        - button "Sidebar control" [ref=e108] [cursor=pointer]:
+          - img [ref=e110]
+      - generic [ref=e312]:
+        - generic [ref=e316]:
+          - heading "Settings" [level=4] [ref=e318]
+          - menu "Sidebar" [disabled] [ref=e321]:
+            - list [ref=e322]:
+              - generic [ref=e325]:
+                - generic [ref=e329]: Configuration
+                - generic [ref=e330]:
+                  - link "General" [disabled] [ref=e331] [cursor=pointer]:
+                    - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/settings/general
+                    - menuitem "General" [disabled] [ref=e332]:
+                      - generic [ref=e336]: General
+                  - link "Compute and Disk" [disabled] [ref=e337] [cursor=pointer]:
+                    - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/settings/compute-and-disk
+                    - menuitem "Compute and Disk" [disabled] [ref=e338]:
+                      - generic [ref=e342]: Compute and Disk
+                  - link "Infrastructure" [disabled] [ref=e343] [cursor=pointer]:
+                    - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/settings/infrastructure
+                    - menuitem "Infrastructure" [disabled] [ref=e344]:
+                      - generic [ref=e348]: Infrastructure
+                  - link "Integrations" [disabled] [ref=e349] [cursor=pointer]:
+                    - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/settings/integrations
+                    - menuitem "Integrations" [disabled] [ref=e350]:
+                      - generic [ref=e354]: Integrations
+                  - link "API Keys" [disabled] [ref=e355] [cursor=pointer]:
+                    - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/settings/api-keys
+                    - menuitem "API Keys" [disabled] [ref=e356]:
+                      - generic [ref=e360]: API Keys
+                  - link "JWT Keys" [disabled] [ref=e361] [cursor=pointer]:
+                    - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/settings/jwt
+                    - menuitem "JWT Keys" [disabled] [ref=e362]:
+                      - generic [ref=e366]: JWT Keys
+                  - link "Log Drains" [disabled] [ref=e367] [cursor=pointer]:
+                    - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/settings/log-drains
+                    - menuitem "Log Drains" [disabled] [ref=e368]:
+                      - generic [ref=e372]: Log Drains
+                  - link "Add-ons" [disabled] [ref=e373] [cursor=pointer]:
+                    - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/settings/addons
+                    - menuitem "Add-ons" [disabled] [ref=e374]:
+                      - generic [ref=e378]: Add-ons
+              - generic [ref=e382]:
+                - generic [ref=e386]: Integrations
+                - generic [ref=e387]:
+                  - link "Data API" [disabled] [ref=e388] [cursor=pointer]:
+                    - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/integrations/data_api/overview
+                    - menuitem "Data API" [disabled] [ref=e389]:
+                      - generic [ref=e391]:
+                        - generic "Data API" [ref=e392]:
+                          - generic [ref=e393]: Data API
+                        - img [ref=e395]
+                  - link "Vault Beta" [disabled] [ref=e398] [cursor=pointer]:
+                    - /url: /dashboard/project/mfcdzgkhmzppfctdzhwy/integrations/vault/overview
+                    - menuitem "Vault Beta" [disabled] [ref=e399]:
+                      - generic [ref=e401]:
+                        - generic "Vault" [ref=e402]:
+                          - generic [ref=e403]: Vault
+                          - generic [ref=e404]: Beta
+                        - img [ref=e406]
+              - generic [ref=e412]:
+                - generic [ref=e416]: Billing
+                - generic [ref=e417]:
+                  - link "Subscription" [disabled] [ref=e418] [cursor=pointer]:
+                    - /url: /dashboard/org/mvuaquirgtgvosiarlpi/billing
+                    - menuitem "Subscription" [disabled] [ref=e419]:
+                      - generic [ref=e421]:
+                        - generic "Subscription" [ref=e422]:
+                          - generic [ref=e423]: Subscription
+                        - img [ref=e425]
+                  - link "Usage" [disabled] [ref=e428] [cursor=pointer]:
+                    - /url: /dashboard/org/mvuaquirgtgvosiarlpi/usage?projectRef=mfcdzgkhmzppfctdzhwy
+                    - menuitem "Usage" [disabled] [ref=e429]:
+                      - generic [ref=e431]:
+                        - generic "Usage" [ref=e432]:
+                          - generic [ref=e433]: Usage
+                        - img [ref=e435]
+        - separator [disabled] [ref=e438]:
+          - img [ref=e440]
+        - main [ref=e449]:
+          - generic [ref=e453]:
+            - heading "Project Settings" [level=1] [ref=e454]
+            - generic [ref=e455]: General configuration, domains, ownership, and lifecycle
+          - generic [ref=e456]:
+            - generic [ref=e457]:
+              - heading "General settings" [level=2] [ref=e461]
+              - generic [ref=e464]:
+                - generic [ref=e467]:
+                  - textbox [ref=e469]: LIVAL_OS
+                  - generic [ref=e470]:
+                    - generic [ref=e472]: Project name
+                    - generic [ref=e473]: Displayed throughout the dashboard.
+                - generic [ref=e476]:
+                  - group [ref=e478]:
+                    - textbox [ref=e479]: mfcdzgkhmzppfctdzhwy
+                    - group [ref=e480]:
+                      - button "Copy" [ref=e481] [cursor=pointer]:
+                        - img [ref=e483]
+                        - generic [ref=e486]: Copy
+                  - generic [ref=e487]:
+                    - generic [ref=e489]: Project ID
+                    - generic [ref=e490]: Reference used in APIs and URLs.
+                - generic [ref=e493]:
+                  - group [ref=e495]:
+                    - textbox [ref=e496]: us-east-1
+                    - group [ref=e497]:
+                      - button "Copy" [ref=e498] [cursor=pointer]:
+                        - img [ref=e500]
+                        - generic [ref=e503]: Copy
+                  - generic [ref=e504]:
+                    - generic [ref=e506]: Project region
+                    - generic [ref=e507]: East US (North Virginia)
+                - generic [ref=e508]:
+                  - button "Save changes" [disabled]:
+                    - generic: Save changes
+            - heading "Project access" [level=2] [ref=e513]
+            - generic [ref=e521]:
+              - generic [ref=e524]:
+                - heading "Project availability" [level=2] [ref=e525]
+                - generic [ref=e526]: Restart or pause your project when performing maintenance
+              - generic [ref=e528]:
+                - generic [ref=e530]:
+                  - generic [ref=e531]:
+                    - paragraph [ref=e532]: Restart project
+                    - paragraph [ref=e534]: Your project will not be available for a few minutes.
+                  - generic [ref=e535]:
+                    - button "Restart project" [ref=e536] [cursor=pointer]:
+                      - generic [ref=e537]: Restart project
+                    - button [ref=e538] [cursor=pointer]:
+                      - img [ref=e540]
+                - generic [ref=e543]:
+                  - generic [ref=e544]:
+                    - paragraph [ref=e545]: Pause project
+                    - paragraph [ref=e547]: Your project will not be accessible while it is paused.
+                  - button "Pause project" [ref=e548] [cursor=pointer]:
+                    - img [ref=e550]
+                    - generic [ref=e552]: Pause project
+            - generic [ref=e553]:
+              - generic [ref=e556]:
+                - heading "Custom domains" [level=2] [ref=e557]
+                - generic [ref=e558]: Present a branded experience to your users
+              - alert [ref=e560]:
+                - img [ref=e561]
+                - generic [ref=e563]:
+                  - generic [ref=e564]:
+                    - heading "Custom domains are a Pro Plan add-on" [level=5] [ref=e565]
+                    - paragraph [ref=e567]: Paid Plans come with free vanity subdomains or Custom Domains for an additional $10/month per domain.
+                  - link "Upgrade to Pro" [ref=e569] [cursor=pointer]:
+                    - /url: /dashboard/org/mvuaquirgtgvosiarlpi/billing?panel=subscriptionPlan&source=customDomain
+                    - generic [ref=e570]: Upgrade to Pro
+            - generic [ref=e571]:
+              - heading "Transfer project" [level=2] [ref=e575]
+              - generic [ref=e579]:
+                - generic [ref=e580]:
+                  - img [ref=e581]
+                  - generic [ref=e586]:
+                    - paragraph [ref=e587]: Transfer project to another organization
+                    - paragraph [ref=e588]: To transfer projects, the owner must be a member of both the source and target organizations.
+                - button "Transfer project" [ref=e590] [cursor=pointer]:
+                  - generic [ref=e591]: Transfer project
+            - generic [ref=e592]:
+              - generic [ref=e595]:
+                - heading "Delete project" [level=2] [ref=e596]
+                - generic [ref=e597]: Permanently remove your project and its database
+              - alert [ref=e599]:
+                - img [ref=e600]
+                - heading "Deleting this project will also remove your database." [level=5] [ref=e602]
+                - paragraph [ref=e604]: Make sure you have made a backup if you want to keep your data.
+                - button "Delete project" [ref=e606] [cursor=pointer]:
+                  - generic [ref=e607]: Delete project
+  - alert [ref=e209]: General | Settings | LIVAL_OS | valentinointelligence | Supabase
