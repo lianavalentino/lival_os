@@ -11,8 +11,8 @@ Private personal operating system: daily orientation, task capture, project visi
 - lucide-react icons, date-fns
 
 ## State
-- Branch: `supabase-setup` (working branch as of 2026-06-16)
-- Supabase: connected. Migration `001_lival_os_initial_schema.sql` applied.
+- Branch: `feat/prd-phase0-1-alignment` (working branch as of 2026-06-16)
+- Supabase: connected. Migrations `001_lival_os_initial_schema.sql` and `002_add_planning_and_integration_tables.sql` applied (002 applied 2026-06-16 via dashboard SQL editor — 6 new tables: task_updates, daily_plans, weekly_plans, automation_runs, integrations, file_changes; verified present).
 - Auth: email/password via Supabase Auth (enable in dashboard → Authentication → Providers → Email). User needs to create account on first run ("First setup? Create account").
 - App runs on `npm run dev` → http://localhost:5173
 
