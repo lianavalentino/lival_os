@@ -159,6 +159,9 @@ export class SupabaseRepository implements AppRepository {
       resources: resources.map(mapResource),
       weeklySnapshots: weeklySnapshots.map(mapWeeklySnapshot),
       activityEvents: activityEvents.map(mapActivityEvent),
+      taskUpdates: [],
+      dailyPlans: [],
+      weeklyPlans: [],
     };
   }
 

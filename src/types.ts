@@ -158,6 +158,63 @@ export interface ActivityEvent {
   createdAt: string;
 }
 
+export type TaskUpdateType =
+  | "note"
+  | "status_change"
+  | "time_logged"
+  | "file_change"
+  | "system";
+
+export interface TaskUpdate {
+  id: string;
+  taskId: string;
+  updateType: TaskUpdateType;
+  body: string;
+  source: string;
+  metadata: Record<string, string | number | boolean>;
+  createdAt: string;
+}
+
+export interface DailyPlan {
+  id: string;
+  planDate: string;
+  mustDoTaskIds: string[];
+  shouldDoTaskIds: string[];
+  couldDoTaskIds: string[];
+  notes?: string;
+  generatedBy?: string;
+  metadata: Record<string, string | number | boolean>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WeeklyPlan {
+  id: string;
+  weekStart: string;
+  outcomes: string[];
+  focusAreas: string[];
+  openLoops: string[];
+  generatedBy?: string;
+  metadata: Record<string, string | number | boolean>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DailyPlanInput {
+  planDate: string;
+  mustDoTaskIds: string[];
+  shouldDoTaskIds: string[];
+  couldDoTaskIds: string[];
+  notes?: string;
+}
+
+export interface WeeklyPlanInput {
+  weekStart: string;
+  outcomes: string[];
+  focusAreas: string[];
+  openLoops: string[];
+}
+
 export interface AppData {
   areas: Area[];
   workspaces: Workspace[];
@@ -169,6 +226,9 @@ export interface AppData {
   resources: ResourceItem[];
   weeklySnapshots: WeeklySnapshot[];
   activityEvents: ActivityEvent[];
+  taskUpdates: TaskUpdate[];
+  dailyPlans: DailyPlan[];
+  weeklyPlans: WeeklyPlan[];
 }
 
 export type ViewKey =

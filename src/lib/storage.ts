@@ -6,18 +6,25 @@ const STORAGE_KEY = "lival-os-demo-data:v2";
 const makeId = (prefix: string) =>
   `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
+export const normalizeAppData = (data: AppData): AppData => ({
+  ...data,
+  taskUpdates: data.taskUpdates ?? [],
+  dailyPlans: data.dailyPlans ?? [],
+  weeklyPlans: data.weeklyPlans ?? [],
+});
+
 export const loadLocalData = (): AppData => {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return seedData;
-    return JSON.parse(raw) as AppData;
+    if (!raw) return normalizeAppData(seedData);
+    return normalizeAppData(JSON.parse(raw) as AppData);
   } catch {
     try {
       window.localStorage.removeItem(STORAGE_KEY);
     } catch {
       // Local demo mode should never break app startup.
     }
-    return seedData;
+    return normalizeAppData(seedData);
   }
 };
 
