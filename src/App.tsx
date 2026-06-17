@@ -264,6 +264,19 @@ function LivalShell({
     }
   };
 
+  const saveWeek = async (input: WeeklyPlanInput) => {
+    setIsSaving(true);
+    setAppError(null);
+    try {
+      const nextData = await repository.upsertWeeklyPlan(data, input);
+      setData(nextData);
+    } catch (error) {
+      setAppError(error instanceof Error ? error.message : "Unable to save weekly plan.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const changeInboxStatus = async (inboxId: string, status: InboxItem["status"]) => {
     setIsSaving(true);
     setAppError(null);
@@ -416,7 +429,9 @@ function LivalShell({
         {activeView === "daily" && (
           <DailyPlanner data={data} onSavePlan={savePlan} isSaving={isSaving} />
         )}
-        {activeView === "weekly" && <WeeklyPlanner data={data} />}
+        {activeView === "weekly" && (
+          <WeeklyPlanner data={data} onSaveWeek={saveWeek} isSaving={isSaving} />
+        )}
         {activeView === "board" && (
           <BoardView
             data={filteredData}
@@ -894,22 +909,59 @@ function DailyPlanner({
   );
 }
 
-function WeeklyPlanner({ data }: { data: AppData }) {
+function WeeklyPlanner({
+  data,
+  onSaveWeek,
+  isSaving,
+}: {
+  data: AppData;
+  onSaveWeek: (input: WeeklyPlanInput) => void;
+  isSaving: boolean;
+}) {
+  const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
+  const storedPlan = data.weeklyPlans.find((plan) => plan.weekStart === weekStart);
+
+  const derivedOutcomes = [
+    "Persistent LIVAL OS MVP is usable from desktop and mobile.",
+    "Client delivery work remains visible against personal projects.",
+    "Weekly evidence is generated from real stored activity.",
+  ];
+  const derivedFocusAreas = data.areas.slice(0, 4).map((area) => area.name as string);
+  const derivedOpenLoops = data.tasks
+    .filter((task) => task.status === "blocked")
+    .map((task) => task.title);
+
+  const outcomes = storedPlan ? storedPlan.outcomes : derivedOutcomes;
+  const focusAreas = storedPlan ? storedPlan.focusAreas : derivedFocusAreas;
+  const openLoops = storedPlan ? storedPlan.openLoops : derivedOpenLoops;
+
+  const handleSave = () => {
+    onSaveWeek({
+      weekStart,
+      outcomes: derivedOutcomes,
+      focusAreas: derivedFocusAreas,
+      openLoops: derivedOpenLoops,
+    });
+  };
+
   return (
     <div className="content-grid">
       <section className="panel span-2">
         <PanelHeader title="This Week's Outcomes" icon={Target} />
-        <ListItems
-          items={[
-            "Persistent LIVAL OS MVP is usable from desktop and mobile.",
-            "Client delivery work remains visible against personal projects.",
-            "Weekly evidence is generated from real stored activity.",
-          ]}
-        />
+        <ListItems items={outcomes} empty="No outcomes set." />
+        <button
+          className="secondary-action"
+          type="button"
+          onClick={handleSave}
+          disabled={isSaving}
+        >
+          <Target size={16} />
+          {storedPlan ? "Update this week" : "Save this week"}
+        </button>
       </section>
       <section className="panel">
         <PanelHeader title="Focus Areas" icon={Sparkles} />
-        <ListItems items={data.areas.slice(0, 4).map((area) => area.name)} />
+        <ListItems items={focusAreas} empty="No focus areas." />
       </section>
       <section className="panel span-2">
         <PanelHeader title="Project Priorities" icon={FolderKanban} />
@@ -925,7 +977,7 @@ function WeeklyPlanner({ data }: { data: AppData }) {
       </section>
       <section className="panel">
         <PanelHeader title="Open Loops" icon={LifeBuoy} />
-        <ListItems items={data.tasks.filter((task) => task.status === "blocked").map((task) => task.title)} empty="No blocked work." />
+        <ListItems items={openLoops} empty="No blocked work." />
       </section>
       <section className="panel span-3">
         <PanelHeader title="Weekly Calendar Overview" icon={CalendarDays} />
