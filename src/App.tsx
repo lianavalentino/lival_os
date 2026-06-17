@@ -27,14 +27,17 @@ import {
   Target,
   X,
 } from "lucide-react";
+import { format, startOfWeek } from "date-fns";
 import {
   AppData,
   CaptureDraft,
+  DailyPlanInput,
   InboxItem,
   Project,
   Task,
   TaskStatus,
   ViewKey,
+  WeeklyPlanInput,
 } from "./types";
 import { seedData } from "./data/seed";
 import { hasSupabaseConfig, supabase } from "./lib/supabase";
@@ -248,6 +251,19 @@ function LivalShell({
     }
   };
 
+  const savePlan = async (input: DailyPlanInput) => {
+    setIsSaving(true);
+    setAppError(null);
+    try {
+      const nextData = await repository.upsertDailyPlan(data, input);
+      setData(nextData);
+    } catch (error) {
+      setAppError(error instanceof Error ? error.message : "Unable to save daily plan.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const changeInboxStatus = async (inboxId: string, status: InboxItem["status"]) => {
     setIsSaving(true);
     setAppError(null);
@@ -397,7 +413,9 @@ function LivalShell({
             }}
           />
         )}
-        {activeView === "daily" && <DailyPlanner data={data} />}
+        {activeView === "daily" && (
+          <DailyPlanner data={data} onSavePlan={savePlan} isSaving={isSaving} />
+        )}
         {activeView === "weekly" && <WeeklyPlanner data={data} />}
         {activeView === "board" && (
           <BoardView
@@ -795,19 +813,60 @@ function CommandCenter({
   );
 }
 
-function DailyPlanner({ data }: { data: AppData }) {
-  const groups = {
-    "Must Do": data.tasks.filter((task) => task.priority === "high" && task.status !== "done").slice(0, 4),
-    "Should Do": data.tasks.filter((task) => task.priority === "medium" && task.status !== "done").slice(0, 4),
-    "Could Do": data.tasks.filter((task) => task.priority === "low" && task.status !== "done").slice(0, 4),
+function DailyPlanner({
+  data,
+  onSavePlan,
+  isSaving,
+}: {
+  data: AppData;
+  onSavePlan: (input: DailyPlanInput) => void;
+  isSaving: boolean;
+}) {
+  const today = format(new Date(), "yyyy-MM-dd");
+  const storedPlan = data.dailyPlans.find((plan) => plan.planDate === today);
+
+  const derived = {
+    mustDo: data.tasks
+      .filter((task) => task.priority === "high" && task.status !== "done")
+      .slice(0, 4),
+    shouldDo: data.tasks
+      .filter((task) => task.priority === "medium" && task.status !== "done")
+      .slice(0, 4),
+    couldDo: data.tasks
+      .filter((task) => task.priority === "low" && task.status !== "done")
+      .slice(0, 4),
+  };
+
+  const titleFor = (id: string) =>
+    data.tasks.find((task) => task.id === id)?.title || "Unknown task";
+
+  const groups: Record<string, string[]> = storedPlan
+    ? {
+        "Must Do": storedPlan.mustDoTaskIds.map(titleFor),
+        "Should Do": storedPlan.shouldDoTaskIds.map(titleFor),
+        "Could Do": storedPlan.couldDoTaskIds.map(titleFor),
+      }
+    : {
+        "Must Do": derived.mustDo.map((task) => task.title),
+        "Should Do": derived.shouldDo.map((task) => task.title),
+        "Could Do": derived.couldDo.map((task) => task.title),
+      };
+
+  const handleSave = () => {
+    onSavePlan({
+      planDate: today,
+      mustDoTaskIds: derived.mustDo.map((task) => task.id),
+      shouldDoTaskIds: derived.shouldDo.map((task) => task.id),
+      couldDoTaskIds: derived.couldDo.map((task) => task.id),
+    });
   };
 
   return (
     <div className="content-grid">
-      {Object.entries(groups).map(([title, tasks]) => (
+      {Object.entries(groups).map(([title, items]) => (
         <section className="panel" key={title}>
           <PanelHeader title={title} icon={ListChecks} />
-          <ListItems items={tasks.map((task) => task.title)} empty="No tasks here." />
+          <ListItems items={items} empty="No tasks here." />
         </section>
       ))}
       <section className="panel span-2">
@@ -816,10 +875,19 @@ function DailyPlanner({ data }: { data: AppData }) {
       </section>
       <section className="panel">
         <PanelHeader title="Unplanned Inbox Items" icon={Inbox} />
-        <ListItems items={data.inboxItems.filter((item) => item.status === "new").map((item) => item.title)} />
-        <button className="secondary-action" type="button">
+        <ListItems
+          items={data.inboxItems
+            .filter((item) => item.status === "new")
+            .map((item) => item.title)}
+        />
+        <button
+          className="secondary-action"
+          type="button"
+          onClick={handleSave}
+          disabled={isSaving}
+        >
           <Sparkles size={16} />
-          Auto-plan placeholder
+          {storedPlan ? "Update today's plan" : "Save today's plan"}
         </button>
       </section>
     </div>
