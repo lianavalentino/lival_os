@@ -5,16 +5,23 @@ Private personal operating system: daily orientation, task capture, project visi
 
 ## Stack
 - Vite + React 19 + TypeScript
-- Tailwind CSS (inline via styles.css)
+- Custom CSS (hand-written CSS variables in `src/styles.css` — no Tailwind, no PostCSS, no build-time CSS framework)
 - Supabase (auth + Postgres) — project `LIVAL_OS`, ref `mfcdzgkhmzppfctdzhwy`
 - `@supabase/supabase-js` v2.50+
 - lucide-react icons, date-fns
 
 ## State
-- Branch: `supabase-setup` (working branch as of 2026-06-16)
-- Supabase: connected. Migration `001_lival_os_initial_schema.sql` applied.
+- Branch: `feat/prd-phase0-1-alignment` (working branch as of 2026-06-16)
+- Supabase: connected. Migrations `001_lival_os_initial_schema.sql` and `002_add_planning_and_integration_tables.sql` applied (002 applied 2026-06-16 via dashboard SQL editor — 6 new tables: task_updates, daily_plans, weekly_plans, automation_runs, integrations, file_changes; verified present).
+- Planning tables wired (Phase 2 data layer): `task_updates`, `daily_plans`, `weekly_plans` load into `AppData` and are read+written by the Daily Planner, Weekly Planner, and Task Detail views (Approach A — snapshot-then-persist). `automation_runs` / `integrations` / `file_changes` remain unwired.
 - Auth: email/password via Supabase Auth (enable in dashboard → Authentication → Providers → Email). User needs to create account on first run ("First setup? Create account").
 - App runs on `npm run dev` → http://localhost:5173
+
+## PRD Alignment
+- Framework decision (2026-06-16): staying on Vite + React SPA — **not** porting to Next.js. Resolved per explicit instruction to preserve working code and make the smallest safe changes.
+- `docs/CLAUDE.md` and `docs/LIVAL_OS_Supabase_Vercel_App_Spec.md` describe a Next.js + Tailwind + shadcn/ui target architecture. Treat both as a superseded reference, not the active build plan.
+- `docs/PRD_Gap_Audit.md` is the live remediation roadmap. See `docs/superpowers/specs/2026-06-16-prd-phase0-1-alignment-design.md` for the Phase 0/1 design and `supabase/migrations/002_add_planning_and_integration_tables.sql` for the Phase 1 schema additions.
+- Phase 2 data-layer wiring: see `docs/superpowers/specs/2026-06-16-phase2-planning-tables-wiring-design.md` and `docs/superpowers/plans/2026-06-16-phase2-planning-tables-wiring.md`. UI extraction of `src/App.tsx` into `src/components/*` remains the next deferred effort.
 
 ## Env
 `.env.local` (never commit):

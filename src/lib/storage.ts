@@ -1,4 +1,15 @@
-import { AppData, CaptureDraft, InboxItem, ResourceItem, Task } from "../types";
+import {
+  AppData,
+  CaptureDraft,
+  DailyPlan,
+  DailyPlanInput,
+  InboxItem,
+  ResourceItem,
+  Task,
+  TaskUpdate,
+  WeeklyPlan,
+  WeeklyPlanInput,
+} from "../types";
 import { seedData } from "../data/seed";
 
 const STORAGE_KEY = "lival-os-demo-data:v2";
@@ -6,18 +17,25 @@ const STORAGE_KEY = "lival-os-demo-data:v2";
 const makeId = (prefix: string) =>
   `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
+export const normalizeAppData = (data: AppData): AppData => ({
+  ...data,
+  taskUpdates: data.taskUpdates ?? [],
+  dailyPlans: data.dailyPlans ?? [],
+  weeklyPlans: data.weeklyPlans ?? [],
+});
+
 export const loadLocalData = (): AppData => {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return seedData;
-    return JSON.parse(raw) as AppData;
+    if (!raw) return normalizeAppData(seedData);
+    return normalizeAppData(JSON.parse(raw) as AppData);
   } catch {
     try {
       window.localStorage.removeItem(STORAGE_KEY);
     } catch {
       // Local demo mode should never break app startup.
     }
-    return seedData;
+    return normalizeAppData(seedData);
   }
 };
 
@@ -286,4 +304,59 @@ export const convertInboxItem = (
       ...nextData.activityEvents,
     ],
   };
+};
+
+export const upsertDailyPlan = (data: AppData, input: DailyPlanInput): AppData => {
+  const now = new Date().toISOString();
+  const existing = data.dailyPlans.find((plan) => plan.planDate === input.planDate);
+  const plan: DailyPlan = existing
+    ? { ...existing, ...input, updatedAt: now }
+    : {
+        id: makeId("daily"),
+        ...input,
+        metadata: {},
+        createdAt: now,
+        updatedAt: now,
+      };
+  const dailyPlans = existing
+    ? data.dailyPlans.map((item) => (item.planDate === input.planDate ? plan : item))
+    : [plan, ...data.dailyPlans];
+  const next = { ...data, dailyPlans };
+  saveLocalData(next);
+  return next;
+};
+
+export const upsertWeeklyPlan = (data: AppData, input: WeeklyPlanInput): AppData => {
+  const now = new Date().toISOString();
+  const existing = data.weeklyPlans.find((plan) => plan.weekStart === input.weekStart);
+  const plan: WeeklyPlan = existing
+    ? { ...existing, ...input, updatedAt: now }
+    : {
+        id: makeId("weekly"),
+        ...input,
+        metadata: {},
+        createdAt: now,
+        updatedAt: now,
+      };
+  const weeklyPlans = existing
+    ? data.weeklyPlans.map((item) => (item.weekStart === input.weekStart ? plan : item))
+    : [plan, ...data.weeklyPlans];
+  const next = { ...data, weeklyPlans };
+  saveLocalData(next);
+  return next;
+};
+
+export const appendTaskUpdate = (data: AppData, taskId: string, body: string): AppData => {
+  const update: TaskUpdate = {
+    id: makeId("update"),
+    taskId,
+    updateType: "note",
+    body,
+    source: "manual",
+    metadata: {},
+    createdAt: new Date().toISOString(),
+  };
+  const next = { ...data, taskUpdates: [update, ...data.taskUpdates] };
+  saveLocalData(next);
+  return next;
 };

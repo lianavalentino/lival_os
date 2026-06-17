@@ -6,15 +6,21 @@ import {
   Area,
   BrainDump,
   CaptureDraft,
+  DailyPlan,
+  DailyPlanInput,
   InboxItem,
   Project,
   ResourceItem,
   Task,
+  TaskUpdate,
   TimeEntry,
+  WeeklyPlan,
+  WeeklyPlanInput,
   WeeklySnapshot,
   Workspace,
 } from "../types";
 import {
+  appendTaskUpdate as appendLocalTaskUpdate,
   convertInboxItem as convertLocalInboxItem,
   createCapture as createLocalCapture,
   loadLocalData,
@@ -22,6 +28,8 @@ import {
   saveLocalData,
   updateInboxStatus as updateLocalInboxStatus,
   updateTaskStatus as updateLocalTaskStatus,
+  upsertDailyPlan as upsertLocalDailyPlan,
+  upsertWeeklyPlan as upsertLocalWeeklyPlan,
 } from "./storage";
 
 export type RepositoryMode = "demo" | "supabase";
@@ -45,6 +53,19 @@ export interface AppRepository {
     currentData: AppData,
     inboxId: string,
     target: InboxConversionTarget,
+  ): Promise<AppData>;
+  upsertDailyPlan(
+    currentData: AppData,
+    input: DailyPlanInput,
+  ): Promise<AppData>;
+  upsertWeeklyPlan(
+    currentData: AppData,
+    input: WeeklyPlanInput,
+  ): Promise<AppData>;
+  appendTaskUpdate(
+    currentData: AppData,
+    taskId: string,
+    body: string,
   ): Promise<AppData>;
   resetDemoData?(): Promise<AppData>;
 }
@@ -88,6 +109,18 @@ export class LocalDemoRepository implements AppRepository {
     const next = convertLocalInboxItem(currentData, inboxId, target);
     saveLocalData(next);
     return next;
+  }
+
+  async upsertDailyPlan(currentData: AppData, input: DailyPlanInput) {
+    return upsertLocalDailyPlan(currentData, input);
+  }
+
+  async upsertWeeklyPlan(currentData: AppData, input: WeeklyPlanInput) {
+    return upsertLocalWeeklyPlan(currentData, input);
+  }
+
+  async appendTaskUpdate(currentData: AppData, taskId: string, body: string) {
+    return appendLocalTaskUpdate(currentData, taskId, body);
   }
 
   async resetDemoData() {
@@ -135,6 +168,9 @@ export class SupabaseRepository implements AppRepository {
       resources,
       weeklySnapshots,
       activityEvents,
+      taskUpdates,
+      dailyPlans,
+      weeklyPlans,
     ] = await Promise.all([
       this.fetchTable("areas", "sort_order"),
       this.fetchTable("workspaces", "sort_order"),
@@ -146,6 +182,9 @@ export class SupabaseRepository implements AppRepository {
       this.fetchTable("resources", "category"),
       this.fetchTable("weekly_snapshots", "week_start", false),
       this.fetchTable("activity_events", "created_at", false),
+      this.fetchTable("task_updates", "created_at", false),
+      this.fetchTable("daily_plans", "plan_date", false),
+      this.fetchTable("weekly_plans", "week_start", false),
     ]);
 
     return {
@@ -159,6 +198,9 @@ export class SupabaseRepository implements AppRepository {
       resources: resources.map(mapResource),
       weeklySnapshots: weeklySnapshots.map(mapWeeklySnapshot),
       activityEvents: activityEvents.map(mapActivityEvent),
+      taskUpdates: taskUpdates.map(mapTaskUpdate),
+      dailyPlans: dailyPlans.map(mapDailyPlan),
+      weeklyPlans: weeklyPlans.map(mapWeeklyPlan),
     };
   }
 
@@ -383,6 +425,86 @@ export class SupabaseRepository implements AppRepository {
       { inboxId },
     );
 
+    return this.loadData();
+  }
+
+  async upsertDailyPlan(_currentData: AppData, input: DailyPlanInput) {
+    const { data, error } = await this.client
+      .from("daily_plans")
+      .upsert(
+        {
+          user_id: this.user.id,
+          plan_date: input.planDate,
+          must_do_task_ids: input.mustDoTaskIds,
+          should_do_task_ids: input.shouldDoTaskIds,
+          could_do_task_ids: input.couldDoTaskIds,
+          notes: input.notes ?? null,
+          metadata: {},
+        },
+        { onConflict: "user_id,plan_date" },
+      )
+      .select("id")
+      .single();
+    if (error) throw error;
+    await this.insertActivity(
+      "daily_plan",
+      data.id,
+      "saved",
+      `Saved daily plan for ${input.planDate}`,
+      { plan_date: input.planDate },
+    );
+    return this.loadData();
+  }
+
+  async upsertWeeklyPlan(_currentData: AppData, input: WeeklyPlanInput) {
+    const { data, error } = await this.client
+      .from("weekly_plans")
+      .upsert(
+        {
+          user_id: this.user.id,
+          week_start: input.weekStart,
+          outcomes: input.outcomes,
+          focus_areas: input.focusAreas,
+          open_loops: input.openLoops,
+          metadata: {},
+        },
+        { onConflict: "user_id,week_start" },
+      )
+      .select("id")
+      .single();
+    if (error) throw error;
+    await this.insertActivity(
+      "weekly_plan",
+      data.id,
+      "saved",
+      `Saved weekly plan for week of ${input.weekStart}`,
+      { week_start: input.weekStart },
+    );
+    return this.loadData();
+  }
+
+  async appendTaskUpdate(currentData: AppData, taskId: string, body: string) {
+    const task = currentData.tasks.find((item) => item.id === taskId);
+    const { data, error } = await this.client
+      .from("task_updates")
+      .insert({
+        user_id: this.user.id,
+        task_id: taskId,
+        update_type: "note",
+        body,
+        source: "manual",
+        metadata: {},
+      })
+      .select("id")
+      .single();
+    if (error) throw error;
+    await this.insertActivity(
+      "task",
+      taskId,
+      "note_added",
+      `Added note to task: ${task?.title || "Untitled task"}`,
+      { task_update_id: data.id },
+    );
     return this.loadData();
   }
 
@@ -962,4 +1084,39 @@ const mapActivityEvent = (row: DbRow): ActivityEvent => ({
   message: text(row.message),
   metadata: metadataValue(row.metadata),
   createdAt: text(row.created_at),
+});
+
+export const mapTaskUpdate = (row: DbRow): TaskUpdate => ({
+  id: text(row.id),
+  taskId: text(row.task_id),
+  updateType: text(row.update_type) as TaskUpdate["updateType"],
+  body: text(row.body),
+  source: text(row.source),
+  metadata: metadataValue(row.metadata),
+  createdAt: text(row.created_at),
+});
+
+export const mapDailyPlan = (row: DbRow): DailyPlan => ({
+  id: text(row.id),
+  planDate: text(row.plan_date),
+  mustDoTaskIds: textArray(row.must_do_task_ids),
+  shouldDoTaskIds: textArray(row.should_do_task_ids),
+  couldDoTaskIds: textArray(row.could_do_task_ids),
+  notes: text(row.notes) || undefined,
+  generatedBy: text(row.generated_by) || undefined,
+  metadata: metadataValue(row.metadata),
+  createdAt: text(row.created_at),
+  updatedAt: text(row.updated_at),
+});
+
+export const mapWeeklyPlan = (row: DbRow): WeeklyPlan => ({
+  id: text(row.id),
+  weekStart: text(row.week_start),
+  outcomes: textArray(row.outcomes),
+  focusAreas: textArray(row.focus_areas),
+  openLoops: textArray(row.open_loops),
+  generatedBy: text(row.generated_by) || undefined,
+  metadata: metadataValue(row.metadata),
+  createdAt: text(row.created_at),
+  updatedAt: text(row.updated_at),
 });

@@ -27,14 +27,17 @@ import {
   Target,
   X,
 } from "lucide-react";
+import { format, startOfWeek } from "date-fns";
 import {
   AppData,
   CaptureDraft,
+  DailyPlanInput,
   InboxItem,
   Project,
   Task,
   TaskStatus,
   ViewKey,
+  WeeklyPlanInput,
 } from "./types";
 import { seedData } from "./data/seed";
 import { hasSupabaseConfig, supabase } from "./lib/supabase";
@@ -248,6 +251,45 @@ function LivalShell({
     }
   };
 
+  const savePlan = async (input: DailyPlanInput) => {
+    setIsSaving(true);
+    setAppError(null);
+    try {
+      const nextData = await repository.upsertDailyPlan(data, input);
+      setData(nextData);
+    } catch (error) {
+      setAppError(error instanceof Error ? error.message : "Unable to save daily plan.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const saveWeek = async (input: WeeklyPlanInput) => {
+    setIsSaving(true);
+    setAppError(null);
+    try {
+      const nextData = await repository.upsertWeeklyPlan(data, input);
+      setData(nextData);
+    } catch (error) {
+      setAppError(error instanceof Error ? error.message : "Unable to save weekly plan.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const addTaskUpdate = async (taskId: string, body: string) => {
+    setIsSaving(true);
+    setAppError(null);
+    try {
+      const nextData = await repository.appendTaskUpdate(data, taskId, body);
+      setData(nextData);
+    } catch (error) {
+      setAppError(error instanceof Error ? error.message : "Unable to add note.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const changeInboxStatus = async (inboxId: string, status: InboxItem["status"]) => {
     setIsSaving(true);
     setAppError(null);
@@ -397,8 +439,12 @@ function LivalShell({
             }}
           />
         )}
-        {activeView === "daily" && <DailyPlanner data={data} />}
-        {activeView === "weekly" && <WeeklyPlanner data={data} />}
+        {activeView === "daily" && (
+          <DailyPlanner data={data} onSavePlan={savePlan} isSaving={isSaving} />
+        )}
+        {activeView === "weekly" && (
+          <WeeklyPlanner data={data} onSaveWeek={saveWeek} isSaving={isSaving} />
+        )}
         {activeView === "board" && (
           <BoardView
             data={filteredData}
@@ -438,6 +484,8 @@ function LivalShell({
             data={data}
             task={selectedTask}
             onStatusChange={changeTaskStatus}
+            onAddNote={addTaskUpdate}
+            isSaving={isSaving}
           />
         )}
         {activeView === "inbox" && (
@@ -795,19 +843,60 @@ function CommandCenter({
   );
 }
 
-function DailyPlanner({ data }: { data: AppData }) {
-  const groups = {
-    "Must Do": data.tasks.filter((task) => task.priority === "high" && task.status !== "done").slice(0, 4),
-    "Should Do": data.tasks.filter((task) => task.priority === "medium" && task.status !== "done").slice(0, 4),
-    "Could Do": data.tasks.filter((task) => task.priority === "low" && task.status !== "done").slice(0, 4),
+function DailyPlanner({
+  data,
+  onSavePlan,
+  isSaving,
+}: {
+  data: AppData;
+  onSavePlan: (input: DailyPlanInput) => void;
+  isSaving: boolean;
+}) {
+  const today = format(new Date(), "yyyy-MM-dd");
+  const storedPlan = data.dailyPlans.find((plan) => plan.planDate === today);
+
+  const derived = {
+    mustDo: data.tasks
+      .filter((task) => task.priority === "high" && task.status !== "done")
+      .slice(0, 4),
+    shouldDo: data.tasks
+      .filter((task) => task.priority === "medium" && task.status !== "done")
+      .slice(0, 4),
+    couldDo: data.tasks
+      .filter((task) => task.priority === "low" && task.status !== "done")
+      .slice(0, 4),
+  };
+
+  const titleFor = (id: string) =>
+    data.tasks.find((task) => task.id === id)?.title || "Unknown task";
+
+  const groups: Record<string, string[]> = storedPlan
+    ? {
+        "Must Do": storedPlan.mustDoTaskIds.map(titleFor),
+        "Should Do": storedPlan.shouldDoTaskIds.map(titleFor),
+        "Could Do": storedPlan.couldDoTaskIds.map(titleFor),
+      }
+    : {
+        "Must Do": derived.mustDo.map((task) => task.title),
+        "Should Do": derived.shouldDo.map((task) => task.title),
+        "Could Do": derived.couldDo.map((task) => task.title),
+      };
+
+  const handleSave = () => {
+    onSavePlan({
+      planDate: today,
+      mustDoTaskIds: derived.mustDo.map((task) => task.id),
+      shouldDoTaskIds: derived.shouldDo.map((task) => task.id),
+      couldDoTaskIds: derived.couldDo.map((task) => task.id),
+    });
   };
 
   return (
     <div className="content-grid">
-      {Object.entries(groups).map(([title, tasks]) => (
+      {Object.entries(groups).map(([title, items]) => (
         <section className="panel" key={title}>
           <PanelHeader title={title} icon={ListChecks} />
-          <ListItems items={tasks.map((task) => task.title)} empty="No tasks here." />
+          <ListItems items={items} empty="No tasks here." />
         </section>
       ))}
       <section className="panel span-2">
@@ -816,32 +905,78 @@ function DailyPlanner({ data }: { data: AppData }) {
       </section>
       <section className="panel">
         <PanelHeader title="Unplanned Inbox Items" icon={Inbox} />
-        <ListItems items={data.inboxItems.filter((item) => item.status === "new").map((item) => item.title)} />
-        <button className="secondary-action" type="button">
+        <ListItems
+          items={data.inboxItems
+            .filter((item) => item.status === "new")
+            .map((item) => item.title)}
+        />
+        <button
+          className="secondary-action"
+          type="button"
+          onClick={handleSave}
+          disabled={isSaving}
+        >
           <Sparkles size={16} />
-          Auto-plan placeholder
+          {storedPlan ? "Update today's plan" : "Save today's plan"}
         </button>
       </section>
     </div>
   );
 }
 
-function WeeklyPlanner({ data }: { data: AppData }) {
+function WeeklyPlanner({
+  data,
+  onSaveWeek,
+  isSaving,
+}: {
+  data: AppData;
+  onSaveWeek: (input: WeeklyPlanInput) => void;
+  isSaving: boolean;
+}) {
+  const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
+  const storedPlan = data.weeklyPlans.find((plan) => plan.weekStart === weekStart);
+
+  const derivedOutcomes = [
+    "Persistent LIVAL OS MVP is usable from desktop and mobile.",
+    "Client delivery work remains visible against personal projects.",
+    "Weekly evidence is generated from real stored activity.",
+  ];
+  const derivedFocusAreas = data.areas.slice(0, 4).map((area) => area.name as string);
+  const derivedOpenLoops = data.tasks
+    .filter((task) => task.status === "blocked")
+    .map((task) => task.title);
+
+  const outcomes = storedPlan ? storedPlan.outcomes : derivedOutcomes;
+  const focusAreas = storedPlan ? storedPlan.focusAreas : derivedFocusAreas;
+  const openLoops = storedPlan ? storedPlan.openLoops : derivedOpenLoops;
+
+  const handleSave = () => {
+    onSaveWeek({
+      weekStart,
+      outcomes: derivedOutcomes,
+      focusAreas: derivedFocusAreas,
+      openLoops: derivedOpenLoops,
+    });
+  };
+
   return (
     <div className="content-grid">
       <section className="panel span-2">
         <PanelHeader title="This Week's Outcomes" icon={Target} />
-        <ListItems
-          items={[
-            "Persistent LIVAL OS MVP is usable from desktop and mobile.",
-            "Client delivery work remains visible against personal projects.",
-            "Weekly evidence is generated from real stored activity.",
-          ]}
-        />
+        <ListItems items={outcomes} empty="No outcomes set." />
+        <button
+          className="secondary-action"
+          type="button"
+          onClick={handleSave}
+          disabled={isSaving}
+        >
+          <Target size={16} />
+          {storedPlan ? "Update this week" : "Save this week"}
+        </button>
       </section>
       <section className="panel">
         <PanelHeader title="Focus Areas" icon={Sparkles} />
-        <ListItems items={data.areas.slice(0, 4).map((area) => area.name)} />
+        <ListItems items={focusAreas} empty="No focus areas." />
       </section>
       <section className="panel span-2">
         <PanelHeader title="Project Priorities" icon={FolderKanban} />
@@ -857,7 +992,7 @@ function WeeklyPlanner({ data }: { data: AppData }) {
       </section>
       <section className="panel">
         <PanelHeader title="Open Loops" icon={LifeBuoy} />
-        <ListItems items={data.tasks.filter((task) => task.status === "blocked").map((task) => task.title)} empty="No blocked work." />
+        <ListItems items={openLoops} empty="No blocked work." />
       </section>
       <section className="panel span-3">
         <PanelHeader title="Weekly Calendar Overview" icon={CalendarDays} />
@@ -1074,11 +1209,25 @@ function TaskDetail({
   data,
   task,
   onStatusChange,
+  onAddNote,
+  isSaving,
 }: {
   data: AppData;
   task: Task;
   onStatusChange: (taskId: string, status: TaskStatus) => void;
+  onAddNote: (taskId: string, body: string) => void;
+  isSaving: boolean;
 }) {
+  const [note, setNote] = useState("");
+  const updates = data.taskUpdates.filter((update) => update.taskId === task.id);
+
+  const handleAddNote = () => {
+    const body = note.trim();
+    if (!body) return;
+    onAddNote(task.id, body);
+    setNote("");
+  };
+
   return (
     <div className="detail-layout">
       <section className="panel detail-hero">
@@ -1088,9 +1237,12 @@ function TaskDetail({
         <div className="detail-meta">
           <Metric label="Status" value={taskStatusLabels[task.status]} tone="purple" />
           <Metric label="Estimate" value={minutesToHours(task.estimatedMinutes)} tone="blue" />
-          <Metric label="Due" value={task.dueDate || "Unset" as string} tone="green" />
+          <Metric label="Due" value={task.dueDate || ("Unset" as string)} tone="green" />
         </div>
-        <select value={task.status} onChange={(event) => onStatusChange(task.id, event.target.value as TaskStatus)}>
+        <select
+          value={task.status}
+          onChange={(event) => onStatusChange(task.id, event.target.value as TaskStatus)}
+        >
           {statusOrder.map((status) => (
             <option key={status} value={status}>
               {taskStatusLabels[status]}
@@ -1104,15 +1256,43 @@ function TaskDetail({
       </section>
       <section className="panel">
         <PanelHeader title="Files and Links" icon={Link2} />
-        <ListItems items={data.resources.filter((resource) => resource.projectId === task.projectId).map((resource) => resource.title)} empty="No linked resources." />
+        <ListItems
+          items={data.resources
+            .filter((resource) => resource.projectId === task.projectId)
+            .map((resource) => resource.title)}
+          empty="No linked resources."
+        />
       </section>
       <section className="panel">
         <PanelHeader title="Notes" icon={Brain} />
-        <ListItems items={[task.description || "No notes yet."]} />
+        <ListItems
+          items={updates.length ? updates.map((update) => update.body) : [task.description || "No notes yet."]}
+          empty="No notes yet."
+        />
+        <textarea
+          className="note-input"
+          placeholder="Add a note..."
+          value={note}
+          onChange={(event) => setNote(event.target.value)}
+        />
+        <button
+          className="secondary-action"
+          type="button"
+          onClick={handleAddNote}
+          disabled={isSaving}
+        >
+          <Plus size={16} />
+          Add note
+        </button>
       </section>
       <section className="panel">
         <PanelHeader title="Activity" icon={Sparkles} />
-        <ListItems items={data.activityEvents.filter((event) => event.entityId === task.id).map((event) => event.message)} empty="No activity yet." />
+        <ListItems
+          items={data.activityEvents
+            .filter((event) => event.entityId === task.id)
+            .map((event) => event.message)}
+          empty="No activity yet."
+        />
       </section>
     </div>
   );
