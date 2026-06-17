@@ -7,6 +7,7 @@ import {
   BrainDump,
   CaptureDraft,
   DailyPlan,
+  DailyPlanInput,
   InboxItem,
   Project,
   ResourceItem,
@@ -14,10 +15,12 @@ import {
   TaskUpdate,
   TimeEntry,
   WeeklyPlan,
+  WeeklyPlanInput,
   WeeklySnapshot,
   Workspace,
 } from "../types";
 import {
+  appendTaskUpdate as appendLocalTaskUpdate,
   convertInboxItem as convertLocalInboxItem,
   createCapture as createLocalCapture,
   loadLocalData,
@@ -25,6 +28,8 @@ import {
   saveLocalData,
   updateInboxStatus as updateLocalInboxStatus,
   updateTaskStatus as updateLocalTaskStatus,
+  upsertDailyPlan as upsertLocalDailyPlan,
+  upsertWeeklyPlan as upsertLocalWeeklyPlan,
 } from "./storage";
 
 export type RepositoryMode = "demo" | "supabase";
@@ -48,6 +53,19 @@ export interface AppRepository {
     currentData: AppData,
     inboxId: string,
     target: InboxConversionTarget,
+  ): Promise<AppData>;
+  upsertDailyPlan(
+    currentData: AppData,
+    input: DailyPlanInput,
+  ): Promise<AppData>;
+  upsertWeeklyPlan(
+    currentData: AppData,
+    input: WeeklyPlanInput,
+  ): Promise<AppData>;
+  appendTaskUpdate(
+    currentData: AppData,
+    taskId: string,
+    body: string,
   ): Promise<AppData>;
   resetDemoData?(): Promise<AppData>;
 }
@@ -91,6 +109,18 @@ export class LocalDemoRepository implements AppRepository {
     const next = convertLocalInboxItem(currentData, inboxId, target);
     saveLocalData(next);
     return next;
+  }
+
+  async upsertDailyPlan(currentData: AppData, input: DailyPlanInput) {
+    return upsertLocalDailyPlan(currentData, input);
+  }
+
+  async upsertWeeklyPlan(currentData: AppData, input: WeeklyPlanInput) {
+    return upsertLocalWeeklyPlan(currentData, input);
+  }
+
+  async appendTaskUpdate(currentData: AppData, taskId: string, body: string) {
+    return appendLocalTaskUpdate(currentData, taskId, body);
   }
 
   async resetDemoData() {
@@ -395,6 +425,86 @@ export class SupabaseRepository implements AppRepository {
       { inboxId },
     );
 
+    return this.loadData();
+  }
+
+  async upsertDailyPlan(_currentData: AppData, input: DailyPlanInput) {
+    const { data, error } = await this.client
+      .from("daily_plans")
+      .upsert(
+        {
+          user_id: this.user.id,
+          plan_date: input.planDate,
+          must_do_task_ids: input.mustDoTaskIds,
+          should_do_task_ids: input.shouldDoTaskIds,
+          could_do_task_ids: input.couldDoTaskIds,
+          notes: input.notes ?? null,
+          metadata: {},
+        },
+        { onConflict: "user_id,plan_date" },
+      )
+      .select("id")
+      .single();
+    if (error) throw error;
+    await this.insertActivity(
+      "daily_plan",
+      data.id,
+      "saved",
+      `Saved daily plan for ${input.planDate}`,
+      { plan_date: input.planDate },
+    );
+    return this.loadData();
+  }
+
+  async upsertWeeklyPlan(_currentData: AppData, input: WeeklyPlanInput) {
+    const { data, error } = await this.client
+      .from("weekly_plans")
+      .upsert(
+        {
+          user_id: this.user.id,
+          week_start: input.weekStart,
+          outcomes: input.outcomes,
+          focus_areas: input.focusAreas,
+          open_loops: input.openLoops,
+          metadata: {},
+        },
+        { onConflict: "user_id,week_start" },
+      )
+      .select("id")
+      .single();
+    if (error) throw error;
+    await this.insertActivity(
+      "weekly_plan",
+      data.id,
+      "saved",
+      `Saved weekly plan for week of ${input.weekStart}`,
+      { week_start: input.weekStart },
+    );
+    return this.loadData();
+  }
+
+  async appendTaskUpdate(currentData: AppData, taskId: string, body: string) {
+    const task = currentData.tasks.find((item) => item.id === taskId);
+    const { data, error } = await this.client
+      .from("task_updates")
+      .insert({
+        user_id: this.user.id,
+        task_id: taskId,
+        update_type: "note",
+        body,
+        source: "manual",
+        metadata: {},
+      })
+      .select("id")
+      .single();
+    if (error) throw error;
+    await this.insertActivity(
+      "task",
+      taskId,
+      "note_added",
+      `Added note to task: ${task?.title || "Untitled task"}`,
+      { task_update_id: data.id },
+    );
     return this.loadData();
   }
 
