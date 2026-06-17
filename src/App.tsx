@@ -277,6 +277,19 @@ function LivalShell({
     }
   };
 
+  const addTaskUpdate = async (taskId: string, body: string) => {
+    setIsSaving(true);
+    setAppError(null);
+    try {
+      const nextData = await repository.appendTaskUpdate(data, taskId, body);
+      setData(nextData);
+    } catch (error) {
+      setAppError(error instanceof Error ? error.message : "Unable to add note.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const changeInboxStatus = async (inboxId: string, status: InboxItem["status"]) => {
     setIsSaving(true);
     setAppError(null);
@@ -471,6 +484,8 @@ function LivalShell({
             data={data}
             task={selectedTask}
             onStatusChange={changeTaskStatus}
+            onAddNote={addTaskUpdate}
+            isSaving={isSaving}
           />
         )}
         {activeView === "inbox" && (
@@ -1194,11 +1209,25 @@ function TaskDetail({
   data,
   task,
   onStatusChange,
+  onAddNote,
+  isSaving,
 }: {
   data: AppData;
   task: Task;
   onStatusChange: (taskId: string, status: TaskStatus) => void;
+  onAddNote: (taskId: string, body: string) => void;
+  isSaving: boolean;
 }) {
+  const [note, setNote] = useState("");
+  const updates = data.taskUpdates.filter((update) => update.taskId === task.id);
+
+  const handleAddNote = () => {
+    const body = note.trim();
+    if (!body) return;
+    onAddNote(task.id, body);
+    setNote("");
+  };
+
   return (
     <div className="detail-layout">
       <section className="panel detail-hero">
@@ -1208,9 +1237,12 @@ function TaskDetail({
         <div className="detail-meta">
           <Metric label="Status" value={taskStatusLabels[task.status]} tone="purple" />
           <Metric label="Estimate" value={minutesToHours(task.estimatedMinutes)} tone="blue" />
-          <Metric label="Due" value={task.dueDate || "Unset" as string} tone="green" />
+          <Metric label="Due" value={task.dueDate || ("Unset" as string)} tone="green" />
         </div>
-        <select value={task.status} onChange={(event) => onStatusChange(task.id, event.target.value as TaskStatus)}>
+        <select
+          value={task.status}
+          onChange={(event) => onStatusChange(task.id, event.target.value as TaskStatus)}
+        >
           {statusOrder.map((status) => (
             <option key={status} value={status}>
               {taskStatusLabels[status]}
@@ -1224,15 +1256,43 @@ function TaskDetail({
       </section>
       <section className="panel">
         <PanelHeader title="Files and Links" icon={Link2} />
-        <ListItems items={data.resources.filter((resource) => resource.projectId === task.projectId).map((resource) => resource.title)} empty="No linked resources." />
+        <ListItems
+          items={data.resources
+            .filter((resource) => resource.projectId === task.projectId)
+            .map((resource) => resource.title)}
+          empty="No linked resources."
+        />
       </section>
       <section className="panel">
         <PanelHeader title="Notes" icon={Brain} />
-        <ListItems items={[task.description || "No notes yet."]} />
+        <ListItems
+          items={updates.length ? updates.map((update) => update.body) : [task.description || "No notes yet."]}
+          empty="No notes yet."
+        />
+        <textarea
+          className="note-input"
+          placeholder="Add a note..."
+          value={note}
+          onChange={(event) => setNote(event.target.value)}
+        />
+        <button
+          className="secondary-action"
+          type="button"
+          onClick={handleAddNote}
+          disabled={isSaving}
+        >
+          <Plus size={16} />
+          Add note
+        </button>
       </section>
       <section className="panel">
         <PanelHeader title="Activity" icon={Sparkles} />
-        <ListItems items={data.activityEvents.filter((event) => event.entityId === task.id).map((event) => event.message)} empty="No activity yet." />
+        <ListItems
+          items={data.activityEvents
+            .filter((event) => event.entityId === task.id)
+            .map((event) => event.message)}
+          empty="No activity yet."
+        />
       </section>
     </div>
   );
