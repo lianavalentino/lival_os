@@ -92,6 +92,19 @@ rm -f "$startfile"
 Make both executable (`chmod +x`) and export `LIVAL_INGEST_SECRET` in your shell
 profile so the hooks inherit it. `external_ref=$sid` makes re-runs idempotent.
 
+> **Secret inheritance caveat:** a `~/.zshrc` export only reaches hooks when
+> Claude Code is launched from a terminal. GUI launches (VS Code extension,
+> desktop app) do **not** source `~/.zshrc`, so the hook sees an empty secret
+> and the POST silently 401s. For reliable inheritance across all launch
+> contexts, also add the secret to `~/.claude/settings.json` under `env`:
+>
+> ```json
+> { "env": { "LIVAL_INGEST_SECRET": "<secret>" } }
+> ```
+>
+> `settings.json` is local (not in any repo) but persistent and plaintext —
+> treat it as a credential store.
+
 ## Producer: Apple Shortcut (Siri quick capture)
 
 1. New Shortcut → add **Text** action with your captured note (or "Ask Each Time").
