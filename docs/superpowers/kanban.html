@@ -313,31 +313,31 @@
             {
                 id: 2,
                 name: 'UI Extraction & Repository Wiring',
-                status: 'todo',
+                status: 'progress',
                 tasks: [
                     { id: '2-1', title: 'Extract sidebar', status: 'todo', notes: 'src/components/sidebar.tsx. Navigator for all views.' },
                     { id: '2-2', title: 'Extract command center', status: 'todo', notes: 'src/components/views/CommandCenter.tsx. Main dashboard.' },
-                    { id: '2-3', title: 'Extract daily planner', status: 'todo', notes: 'Wired to daily_plans table.' },
-                    { id: '2-4', title: 'Extract weekly planner', status: 'todo', notes: 'Wired to weekly_plans table.' },
+                    { id: '2-3', title: 'Extract daily planner', status: 'todo', notes: 'Still inline in App.tsx, but read/write wired to daily_plans (402715a).' },
+                    { id: '2-4', title: 'Extract weekly planner', status: 'todo', notes: 'Still inline in App.tsx, but read/write wired to weekly_plans (d615ab7).' },
                     { id: '2-5', title: 'Extract board view', status: 'todo', notes: 'Jira-like task columns.' },
                     { id: '2-6', title: 'Extract projects view', status: 'todo', notes: 'Project list/grid.' },
-                    { id: '2-7', title: 'Extract task detail', status: 'todo', notes: 'Includes task_updates history.' },
-                    { id: '2-8', title: 'Add repository methods', status: 'todo', notes: 'fetch/insert daily_plans, weekly_plans, task_updates' },
-                    { id: '2-9', title: 'Add types', status: 'todo', notes: 'Types for new tables in src/types.ts' },
-                    { id: '2-10', title: 'Refactor App.tsx', status: 'todo', notes: 'Remove view logic, import extracted components.' },
-                    { id: '2-11', title: 'Test all views render', status: 'todo', notes: 'Verify each component loads with real data.' }
+                    { id: '2-7', title: 'Extract task detail', status: 'todo', notes: 'Still inline in App.tsx, but task_updates history wired (55bc1bc).' },
+                    { id: '2-8', title: 'Add repository methods', status: 'done', notes: 'upsertDailyPlan/upsertWeeklyPlan/appendTaskUpdate on both repos (98a26c1).' },
+                    { id: '2-9', title: 'Add types', status: 'done', notes: 'TaskUpdate/DailyPlan/WeeklyPlan + inputs added to src/types.ts (32bff43).' },
+                    { id: '2-10', title: 'Refactor App.tsx', status: 'todo', notes: 'Not started. App.tsx grew larger after wiring landed inline.' },
+                    { id: '2-11', title: 'Test all views render', status: 'done', notes: 'Manual smoke per task; vitest covers mappers/helpers (a518c96..0800641).' }
                 ],
-                summary: 'Single-responsibility UI, persistence layer.'
+                summary: 'Repository wiring shipped (separate plan, 2026-06-16); component extraction not started.'
             },
             {
                 id: 3,
                 name: 'Ingestion Endpoints (Edge Functions)',
                 status: 'progress',
                 tasks: [
-                    { id: '3-1', title: 'Edge function: quick-capture', status: 'progress', notes: 'Create inbox_items from brief captures.' },
-                    { id: '3-2', title: 'Edge function: time-entry', status: 'progress', notes: 'Log time to time_entries. External ref idempotency.' },
-                    { id: '3-3', title: 'Edge function: file-change', status: 'progress', notes: 'Track file edits to file_changes table.' },
-                    { id: '3-4', title: 'Edge function: activity-event', status: 'progress', notes: 'Log activity_events (system-level actions).' },
+                    { id: '3-1', title: 'Edge function: quick-capture', status: 'done', notes: 'Deployed 2026-06-17 (e7b89ed). --no-verify-jwt, bearer-gated.' },
+                    { id: '3-2', title: 'Edge function: time-entry', status: 'done', notes: 'Deployed 2026-06-17 (99c1eab). external_ref idempotency via 003 migration (9c95177).' },
+                    { id: '3-3', title: 'Edge function: file-change', status: 'todo', notes: 'Deferred. Not started — no folder under supabase/functions/.' },
+                    { id: '3-4', title: 'Edge function: activity-event', status: 'todo', notes: 'Deferred. Not started — no folder under supabase/functions/.' },
                     { id: '3-5', title: 'Bearer secret verification', status: 'done', notes: 'All endpoints require LIVAL_INGEST_SECRET.' },
                     { id: '3-6', title: 'JSON response helpers', status: 'done', notes: 'Consistent success/error response format.' },
                     { id: '3-7', title: 'Deno test harness', status: 'done', notes: 'Unit tests for edge functions.' },
