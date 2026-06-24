@@ -1,6 +1,6 @@
 # LIVAL OS — Ingestion Endpoints
 
-Two Supabase Edge Functions accept external writes authenticated by a shared
+Three Supabase Edge Functions accept external writes authenticated by a shared
 bearer secret (`LIVAL_INGEST_SECRET`). Base URL:
 
 ```
@@ -40,6 +40,22 @@ optional `ended_at`, `project_id`, `task_id`, `description`,
 `source` (`manual|codex|claude_code|shortcut|imported`, default `claude_code`),
 `external_ref`. Passing the same `external_ref` twice returns the existing row
 (no duplicate).
+
+## ingest-file-change → File changes
+
+```bash
+curl -X POST \
+  https://mfcdzgkhmzppfctdzhwy.supabase.co/functions/v1/ingest-file-change \
+  -H "Authorization: Bearer $LIVAL_INGEST_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{"file_path":"src/App.tsx","change_type":"modified","source":"claude_code","summary":"Extracted components"}'
+```
+
+Fields: `file_path` (required); optional `change_type`
+(`created|modified|deleted|renamed`), `project_id`, `task_id`, `repo_path`,
+`github_url`, `summary`, `source` (default `claude_code`), `metadata`
+(arbitrary JSON object, default `{}`). No idempotency key — `file_changes`
+has no unique constraint, so re-posting the same change inserts a new row.
 
 ## Producer: Claude Code time tracking (hook)
 
