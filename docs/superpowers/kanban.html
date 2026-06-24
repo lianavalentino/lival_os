@@ -313,7 +313,7 @@
             {
                 id: 2,
                 name: 'UI Extraction & Repository Wiring',
-                status: 'progress',
+                status: 'done',
                 tasks: [
                     { id: '2-1', title: 'Extract sidebar', status: 'done', notes: 'src/components/Sidebar.tsx. Navigator for all views.' },
                     { id: '2-2', title: 'Extract command center', status: 'done', notes: 'src/components/views/CommandCenter.tsx. Main dashboard.' },
@@ -327,7 +327,7 @@
                     { id: '2-10', title: 'Refactor App.tsx', status: 'done', notes: 'src/App.tsx. Refactored from 1754 lines into component orchestration shell (419 lines).' },
                     { id: '2-11', title: 'Test all views render', status: 'done', notes: 'Manual smoke per task; vitest covers mappers/helpers (a518c96..0800641).' }
                 ],
-                summary: 'Repository wiring shipped (separate plan, 2026-06-16); component extraction not started.'
+                summary: 'Repository wiring + App.tsx component extraction shipped (PR #2, 2026-06-23).'
             },
             {
                 id: 3,
