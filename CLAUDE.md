@@ -11,7 +11,7 @@ Private personal operating system: daily orientation, task capture, project visi
 - lucide-react icons, date-fns
 
 ## State
-- Branch: `main` (Phase 0/1 PRD alignment merged 2026-06-23)
+- Branch: `main` (Phase 0/1 PRD alignment merged 2026-06-23; App.tsx component extraction merged 2026-06-23 via PR #2)
 - Supabase: connected. Migrations `001_lival_os_initial_schema.sql`, `002_add_planning_and_integration_tables.sql`, and `003_time_entries_external_ref_unique.sql` applied (001/002 dashboard-applied 2026-06-16, 003 applied via CLI). 6 new tables: task_updates, daily_plans, weekly_plans, automation_runs, integrations, file_changes; verified present.
 - Planning tables wired (Phase 2 data layer): `task_updates`, `daily_plans`, `weekly_plans` load into `AppData` and are read+written by the Daily Planner, Weekly Planner, and Task Detail views (Approach A — snapshot-then-persist). `automation_runs` / `integrations` / `file_changes` remain unwired.
 - Auth: email/password via Supabase Auth (enable in dashboard → Authentication → Providers → Email). User needs to create account on first run ("First setup? Create account").
@@ -24,7 +24,7 @@ Private personal operating system: daily orientation, task capture, project visi
 - Framework decision (2026-06-16): staying on Vite + React SPA — **not** porting to Next.js. Resolved per explicit instruction to preserve working code and make the smallest safe changes.
 - `docs/CLAUDE.md` and `docs/LIVAL_OS_Supabase_Vercel_App_Spec.md` describe a Next.js + Tailwind + shadcn/ui target architecture. Treat both as a superseded reference, not the active build plan.
 - `docs/PRD_Gap_Audit.md` is the live remediation roadmap. See `docs/superpowers/specs/2026-06-16-prd-phase0-1-alignment-design.md` for the Phase 0/1 design and `supabase/migrations/002_add_planning_and_integration_tables.sql` for the Phase 1 schema additions.
-- Phase 2 data-layer wiring: see `docs/superpowers/specs/2026-06-16-phase2-planning-tables-wiring-design.md` and `docs/superpowers/plans/2026-06-16-phase2-planning-tables-wiring.md`. UI extraction of `src/App.tsx` into `src/components/*` remains the next deferred effort.
+- Phase 2 data-layer wiring: see `docs/superpowers/specs/2026-06-16-phase2-planning-tables-wiring-design.md` and `docs/superpowers/plans/2026-06-16-phase2-planning-tables-wiring.md`. UI extraction of `src/App.tsx` into `src/components/*` — DONE 2026-06-23: see `docs/superpowers/plans/2026-06-23-app-tsx-component-extraction.md`; `App.tsx` 1754→419 lines, 19 files extracted under `src/components/`.
 
 ## Env
 `.env.local` (never commit):
@@ -40,7 +40,9 @@ When env vars absent → falls back to local demo mode (localStorage, no auth).
 - `src/lib/storage.ts` — localStorage layer for demo mode
 - `src/lib/metrics.ts` — pure derivations over `AppData`
 - `src/data/seed.ts` — seed data for first-time bootstrap
-- `src/App.tsx` — all views; picks repo based on `hasSupabaseConfig` + session
+- `src/App.tsx` — `App` (repo selection: `hasSupabaseConfig` + session) + `LivalShell` (layout orchestration), 419 lines
+- `src/components/` — `Sidebar`, `TopBar`, `BottomNav`, `CapturePanel`, `AuthGate`, `LoadingScreen`, `ui/primitives.tsx`, and 13 view components under `views/`
+- `src/lib/view-helpers.ts` — shared view-layer helpers extracted from `App.tsx`
 - `src/types.ts` — all TypeScript types
 
 ## Database
