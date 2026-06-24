@@ -64,6 +64,8 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            cursor: pointer;
+            user-select: none;
         }
 
         .phase-title .status-badge {
@@ -71,6 +73,41 @@
             border-radius: 4px;
             font-size: 12px;
             font-weight: 500;
+        }
+
+        .phase-chevron {
+            display: inline-flex;
+            transition: transform 0.2s ease;
+            font-size: 14px;
+            color: var(--color-text-light);
+        }
+
+        .phase-section.collapsed .phase-chevron {
+            transform: rotate(-90deg);
+        }
+
+        .phase-section.collapsed .phase-body {
+            display: none;
+        }
+
+        .phase-docs {
+            display: flex;
+            gap: 8px;
+            margin-left: auto;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .phase-docs a {
+            color: #2563eb;
+            text-decoration: none;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: #eff6ff;
+        }
+
+        .phase-docs a:hover {
+            text-decoration: underline;
         }
 
         .status-badge.done {
@@ -289,6 +326,10 @@
                 id: 0,
                 name: 'Docs & Framework Decision',
                 status: 'done',
+                docs: [
+                    { label: 'Spec', href: 'specs/2026-06-16-prd-phase0-1-alignment-design.md' },
+                    { label: 'Plan', href: 'plans/2026-06-16-prd-phase0-1-alignment-plan.md' }
+                ],
                 tasks: [
                     { id: '0-1', title: 'Confirm Vite SPA vs. Next.js', status: 'done', notes: 'Decision: stay Vite. Preserve working code.' },
                     { id: '0-2', title: 'Fix CLAUDE.md Tailwind claim', status: 'done', notes: 'Removed false "Tailwind CSS" claim (179e658).' },
@@ -301,6 +342,10 @@
                 id: 1,
                 name: 'Supabase Migration — Planning & Integration Tables',
                 status: 'done',
+                docs: [
+                    { label: 'Spec', href: 'specs/2026-06-16-prd-phase0-1-alignment-design.md' },
+                    { label: 'Migration 002', href: '../../supabase/migrations/002_add_planning_and_integration_tables.sql' }
+                ],
                 tasks: [
                     { id: '1-1', title: 'Create migration 002 SQL', status: 'done', notes: '6 new tables: task_updates, daily_plans, weekly_plans, automation_runs, integrations, file_changes' },
                     { id: '1-2', title: 'Add indexes & RLS', status: 'done', notes: '6 indexes, 6 owner policies, 3 triggers' },
@@ -314,6 +359,11 @@
                 id: 2,
                 name: 'UI Extraction & Repository Wiring',
                 status: 'done',
+                docs: [
+                    { label: 'Spec', href: 'specs/2026-06-16-phase2-planning-tables-wiring-design.md' },
+                    { label: 'Plan', href: 'plans/2026-06-16-phase2-planning-tables-wiring.md' },
+                    { label: 'Extraction Plan', href: 'plans/2026-06-23-app-tsx-component-extraction.md' }
+                ],
                 tasks: [
                     { id: '2-1', title: 'Extract sidebar', status: 'done', notes: 'src/components/Sidebar.tsx. Navigator for all views.' },
                     { id: '2-2', title: 'Extract command center', status: 'done', notes: 'src/components/views/CommandCenter.tsx. Main dashboard.' },
@@ -333,6 +383,11 @@
                 id: 3,
                 name: 'Ingestion Endpoints (Edge Functions)',
                 status: 'progress',
+                docs: [
+                    { label: 'Spec', href: 'specs/2026-06-17-phase3-ingestion-edge-functions-design.md' },
+                    { label: 'Plan', href: 'plans/2026-06-17-phase3-ingestion-edge-functions.md' },
+                    { label: 'Ingestion Docs', href: '../ingestion/README.md' }
+                ],
                 tasks: [
                     { id: '3-1', title: 'Edge function: quick-capture', status: 'done', notes: 'Deployed 2026-06-17 (e7b89ed). --no-verify-jwt, bearer-gated.' },
                     { id: '3-2', title: 'Edge function: time-entry', status: 'done', notes: 'Deployed 2026-06-17 (99c1eab). external_ref idempotency via 003 migration (9c95177).' },
@@ -385,10 +440,28 @@
 
         function clearStorage() {
             Object.keys(localStorage).forEach(key => {
-                if (key.startsWith('kanban_task_')) {
+                if (key.startsWith('kanban_task_') || key.startsWith('kanban_phase_collapsed_')) {
                     localStorage.removeItem(key);
                 }
             });
+        }
+
+        function getPhaseCollapseKey(phaseId) {
+            return `kanban_phase_collapsed_${phaseId}`;
+        }
+
+        function isPhaseCollapsed(phaseId) {
+            return localStorage.getItem(getPhaseCollapseKey(phaseId)) === '1';
+        }
+
+        function togglePhaseCollapsed(phaseId) {
+            const collapsed = isPhaseCollapsed(phaseId);
+            if (collapsed) {
+                localStorage.removeItem(getPhaseCollapseKey(phaseId));
+            } else {
+                localStorage.setItem(getPhaseCollapseKey(phaseId), '1');
+            }
+            renderBoard();
         }
 
         function resetBoard() {
@@ -430,20 +503,28 @@
                 const done = tasks.filter(t => t.status === 'done').length;
                 const progress = tasks.filter(t => t.status === 'progress').length;
                 const todo = tasks.filter(t => t.status === 'todo').length;
+                const collapsed = isPhaseCollapsed(phase.id);
+                const docsHtml = (phase.docs || [])
+                    .map(d => `<a href="${d.href}" target="_blank" rel="noopener">${d.label}</a>`)
+                    .join('');
 
                 html += `
-                    <div class="phase-section">
-                        <div class="phase-title">
+                    <div class="phase-section ${collapsed ? 'collapsed' : ''}" data-phase-id="${phase.id}">
+                        <div class="phase-title" data-toggle-phase="${phase.id}">
+                            <span class="phase-chevron">▼</span>
                             Phase ${phase.id}: ${phase.name}
                             <span class="status-badge ${phase.status}">${phase.status.toUpperCase()}</span>
+                            ${docsHtml ? `<span class="phase-docs">${docsHtml}</span>` : ''}
                         </div>
-                        <div class="phase-summary">
-                            ✅ ${done} done • 🔄 ${progress} in progress • ⏳ ${todo} todo
-                        </div>
-                        <div class="columns">
-                            ${renderColumn(tasks, 'done', `Done (${done})`)}
-                            ${renderColumn(tasks, 'progress', `In Progress (${progress})`)}
-                            ${renderColumn(tasks, 'todo', `Todo (${todo})`)}
+                        <div class="phase-body">
+                            <div class="phase-summary">
+                                ⏳ ${todo} todo • 🔄 ${progress} in progress • ✅ ${done} done
+                            </div>
+                            <div class="columns">
+                                ${renderColumn(tasks, 'todo', `Todo (${todo})`)}
+                                ${renderColumn(tasks, 'progress', `In Progress (${progress})`)}
+                                ${renderColumn(tasks, 'done', `Done (${done})`)}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -451,6 +532,16 @@
 
             board.innerHTML = html;
             attachDragListeners();
+            attachPhaseToggleListeners();
+        }
+
+        function attachPhaseToggleListeners() {
+            document.querySelectorAll('[data-toggle-phase]').forEach(title => {
+                title.addEventListener('click', e => {
+                    if (e.target.closest('.phase-docs')) return;
+                    togglePhaseCollapsed(title.getAttribute('data-toggle-phase'));
+                });
+            });
         }
 
         function renderColumn(tasks, status, label) {
