@@ -2,7 +2,10 @@
 
 Date: 2026-06-24
 Status: Approved (design)
-Branch: none (n8n workflow, not a code change to this repo — JSON export checked in for version control)
+Branch: `list-routing-targets` (new edge function) + `ingest-quick-capture`
+modification go through the normal size-based branch policy at plan time;
+the n8n workflow itself is not a code change to this repo (JSON export
+checked in for version control only).
 
 ## 1. Purpose
 
@@ -17,34 +20,58 @@ PRD target (`LIVAL_OS_Codex_PRD_v1.md:729-734`, Phase 4 in that doc's own
 numbering): "Gmail or n8n workflow creates inbox items for client emails and
 appointments." This is the first concrete n8n → LIVAL OS workflow.
 
-## 2. Why n8n (not a new edge function)
+Beyond the PRD's literal ask, the workflow also routes captured emails toward
+the right `Area`/`Workspace`/`Project` (e.g. recognizing client-related mail
+as belonging to the `Consulting` area) using columns that already exist on
+`inbox_items` (`suggested_area_id`, `suggested_workspace_id`,
+`suggested_project_id`, `confidence` — migration 001) but that no current
+producer populates.
+
+## 2. Why n8n, plus one new edge function
 
 n8n is already running self-hosted in Docker (`~/Developer/_services/n8n`,
 port 5678) for personal + client automation. The existing `ingest-quick-capture`
-edge function (deployed, bearer-gated, writes `inbox_items`) is exactly the
-shape this needs — n8n becomes a thin producer hitting a stable endpoint, the
-same pattern Claude Code hooks and the Apple Shortcut already use
-(`docs/ingestion/README.md`). No new edge function, no new Supabase secret.
+edge function (deployed, bearer-gated, writes `inbox_items`) is the same
+shape this needs for the *write* side — n8n becomes a thin producer hitting a
+stable endpoint, the pattern Claude Code hooks and the Apple Shortcut already
+use (`docs/ingestion/README.md`).
 
-Classification logic (AI importance judgment) lives **in the n8n workflow**,
-not server-side, so the prompt can be tweaked visually in n8n without a
-redeploy. Considered and rejected: a new `ingest-gmail-event` edge function
-that does classification server-side — adds a second AI secret
-(`ANTHROPIC_API_KEY`) to Supabase, and loses in-place prompt editing for no
-real benefit since this is a single-user, low-volume workflow.
+Classification logic (AI importance judgment + routing suggestion) lives
+**in the n8n workflow**, not server-side, so the prompt can be tweaked
+visually in n8n without a redeploy. Considered and rejected: a new
+`ingest-gmail-event` edge function that does classification server-side —
+adds a second AI secret (`ANTHROPIC_API_KEY`) to Supabase and loses in-place
+prompt editing for no real benefit on a single-user, low-volume workflow.
+
+The one piece n8n cannot do itself: reading the current list of areas,
+workspaces, and projects to match against. RLS policies are
+`user_id = auth.uid()`, which requires an authenticated session — the anon
+key alone can't read user-scoped tables, and putting the service-role key
+into n8n (a third-party self-hosted tool) would move that key outside
+Supabase's trust boundary for every table, not just this read. So this spec
+adds one new **read-only** edge function, `list-routing-targets`, following
+the exact same bearer-gated/service-role pattern as the existing ingest
+functions — the service-role key stays inside Supabase.
 
 ## 3. Workflow design
 
 ```
+GET list-routing-targets (Bearer LIVAL_INGEST_SECRET) — fetched once per run
 Gmail Trigger (poll, account: valentinoliana@gmail.com, unread, any category)
-   → HTTP Request: Claude Haiku — classify email
-   → IF: importance == true
+   → HTTP Request: Claude Haiku — classify + route email (given routing targets)
+   → IF: important == true
        → true branch:
            → HTTP Request: POST ingest-quick-capture (Bearer LIVAL_INGEST_SECRET)
            → Gmail: add label "LIVAL/Processed", mark read
        → false branch:
            → Gmail: mark read (no capture)
 ```
+
+### list-routing-targets fetch
+
+- Called at the start of each workflow run (cheap, single-user, low data
+  volume — no caching needed).
+- Result merged into the Claude prompt as the list of valid routing targets.
 
 ### Gmail Trigger node
 
@@ -53,29 +80,45 @@ Gmail Trigger (poll, account: valentinoliana@gmail.com, unread, any category)
   Gmail sometimes miscategorizes out of Primary).
 - Poll interval: n8n default (1 min) is fine — personal mailbox, low volume.
 
-### Claude Haiku classification (HTTP Request node)
+### Claude Haiku classification + routing (HTTP Request node)
 
 - Model: `claude-haiku-4-5` via Anthropic Messages API
   (`https://api.anthropic.com/v1/messages`), header `x-api-key` from n8n
   credential `ANTHROPIC_API_KEY` (never committed).
-- Input: subject, sender, snippet/body (truncated — no need to send full long
-  threads to the model).
-- Importance rule given to the model: **important if EITHER** (a) actionable,
-  time-sensitive, has a deadline, or is a calendar/scheduling invite, **OR**
-  (b) the sender is a real person (not an automated/no-reply/marketing
-  sender) — regardless of content. Skip newsletters, receipts, marketing,
-  pure-FYI automated mail that fails both conditions.
+- Input: subject, sender, snippet/body (truncated), plus the
+  areas/workspaces/projects list from `list-routing-targets`.
+- Importance rule: **important if EITHER** (a) actionable, time-sensitive,
+  has a deadline, or is a calendar/scheduling invite, **OR** (b) the sender
+  is a real person (not an automated/no-reply/marketing sender) — regardless
+  of content. Skip newsletters, receipts, marketing, pure-FYI automated mail
+  that fails both conditions.
+- Routing rule: match the email to the best-fitting area/workspace/project
+  from the supplied list if a clear match exists (e.g. client-named sender or
+  project keyword → `Consulting` area and the matching project); otherwise
+  leave the suggestion fields `null` and let `confidence` reflect that. No
+  task-level suggestion — task assignment stays a manual step in the
+  existing Inbox conversion flow; guessing a specific task from an email is
+  too granular to be reliable.
 - Required JSON output (enforced via prompt + n8n expression parsing):
   ```json
   {
     "important": true,
     "type": "email",
     "title": "short subject-derived title",
-    "summary": "1-2 sentence summary"
+    "summary": "1-2 sentence summary",
+    "suggested_area_id": "<uuid or null>",
+    "suggested_workspace_id": "<uuid or null>",
+    "suggested_project_id": "<uuid or null>",
+    "confidence": 0.0
   }
   ```
   `type` is `"appointment"` when the email is a calendar/scheduling invite,
-  otherwise `"email"`.
+  otherwise `"email"`. When no routing match is found, all four routing
+  fields (`suggested_area_id`/`suggested_workspace_id`/`suggested_project_id`/
+  `confidence`) are `null` together — the `inbox_items.confidence` column
+  already permits `null` (migration 001's check constraint is
+  `confidence is null or (confidence between 0 and 1)`), so this needs no
+  special-casing. When a match is found, `confidence` is that match's score.
 - On a malformed/unparseable Claude response: treat as `important: false`
   (skip, mark read). No retry — a single missed email is low-stakes and the
   next poll cycle is not a recovery path for the same message once marked
@@ -98,17 +141,59 @@ Gmail Trigger (poll, account: valentinoliana@gmail.com, unread, any category)
     "body": "<Claude summary, not raw email body>",
     "type": "<email|appointment, from Claude>",
     "source": "n8n",
-    "source_url": "https://mail.google.com/mail/u/0/#inbox/<gmail message id>"
+    "source_url": "https://mail.google.com/mail/u/0/#inbox/<gmail message id>",
+    "suggested_area_id": "<from Claude, or omitted if null>",
+    "suggested_workspace_id": "<from Claude, or omitted if null>",
+    "suggested_project_id": "<from Claude, or omitted if null>",
+    "confidence": "<from Claude>"
   }
   ```
-- Existing endpoint validates/inserts unmodified — no contract change.
+- Requires the `ingest-quick-capture` modification in section 4b below — the
+  deployed handler currently drops these fields.
 
 ### Post-processing (both branches)
 
 - Mark the Gmail message read.
 - True branch additionally adds label `LIVAL/Processed`.
 
-## 4. Dedup / idempotency
+## 4a. New edge function: `list-routing-targets`
+
+- `GET /functions/v1/list-routing-targets`
+- Auth: same `verifyBearer` check against `LIVAL_INGEST_SECRET` as every
+  other ingest function (Task 2 helper, reused as-is).
+- Service-role client (Task 4 helper, reused as-is), manually filtered by
+  `user_id = LIVAL_USER_ID` on each table — service role bypasses RLS, so
+  the filter has to happen in the query, not via policy.
+- Response `200`:
+  ```json
+  {
+    "areas": [{ "id": "uuid", "name": "Consulting" }],
+    "workspaces": [{ "id": "uuid", "name": "...", "area_id": "uuid" }],
+    "projects": [{ "id": "uuid", "name": "...", "workspace_id": "uuid" }]
+  }
+  ```
+- No request body to validate. Error responses identical to the existing
+  contract (`401` unauthorized, `405` method not allowed, `500` internal) —
+  no `400` case since there's no input to fail validation.
+- File layout mirrors `ingest-activity-event`: `handler.ts` (query logic via
+  an injected `RoutingTargetsDb` interface, same DI-for-testability pattern
+  as every other handler), `index.ts` (wires the real service-role client),
+  `handler_test.ts` (fake DB, asserts shape + 401 + 405).
+
+## 4b. Modify `ingest-quick-capture`
+
+- `quickCaptureSchema` (Zod) gains four optional fields:
+  `suggested_area_id` (`z.string().uuid().optional()`),
+  `suggested_workspace_id` (same), `suggested_project_id` (same),
+  `confidence` (`z.number().min(0).max(1).optional()`).
+- `InboxRow` / `toInboxRow` map them straight through (`null` when omitted —
+  same optional-field pattern already used for `body`/`source_url`).
+- Backward compatible: every existing producer (Claude Code hook, Apple
+  Shortcut) keeps working unchanged since the new fields are optional.
+- New test cases added to `handler_test.ts`: row includes suggested_* fields
+  when provided, row has `null`s when omitted (existing producers unaffected).
+
+## 5. Dedup / idempotency
 
 `inbox_items` has no idempotency key (consistent with `file_changes` and
 `activity_events` — only `time_entries.external_ref` has one, per Phase 3).
@@ -120,53 +205,73 @@ re-scanning old unread mail. It does **not** prevent a duplicate row if the
 same message is manually re-run through the workflow — accepted risk for a
 personal-use, manually-supervised workflow.
 
-## 5. Secrets
+## 6. Secrets
 
 - `ANTHROPIC_API_KEY` — new n8n credential, used only by this workflow's
   HTTP Request node to Claude. Not stored in this repo.
 - `LIVAL_INGEST_SECRET` — existing n8n credential (bearer secret), reused
-  from Phase 3 deployment. Not regenerated.
+  from Phase 3 deployment for both `ingest-quick-capture` and the new
+  `list-routing-targets`. Not regenerated.
 - Gmail OAuth — existing n8n Gmail credential, or newly authorized against
   `valentinoliana@gmail.com` if not already present.
+- No service-role key in n8n at any point (see section 2).
 
-## 6. Rollout safety
+## 7. Rollout safety
 
 Per `~/Developer/_services/n8n/CLAUDE.md`'s own hard rules ("never trigger a
 production flow from a Claude session without explicit confirmation," "test
 flows in n8n's test mode before activating"):
 
-1. Build the workflow in n8n inactive/test mode.
-2. Manually execute it against a handful of real unread emails (mix of
-   important and skippable) and inspect both the Claude classification output
-   and the resulting `inbox_items` rows.
-3. Only after explicit user confirmation, activate the workflow for live
+1. Ship and live-verify `list-routing-targets` and the `ingest-quick-capture`
+   change independently first (deno tests + curl), same definition-of-done
+   bar as every other Phase 3 endpoint.
+2. Build the n8n workflow in inactive/test mode.
+3. Manually execute it against a handful of real unread emails (mix of
+   important/skippable, and mix of client/non-client) and inspect the Claude
+   output, the routing suggestions, and the resulting `inbox_items` rows.
+4. Only after explicit user confirmation, activate the workflow for live
    polling.
 
 This workflow is additive to the shared n8n instance and does not modify or
 interact with existing ETD client flows running there.
 
-## 7. Out of scope (still deferred)
+## 8. Out of scope (still deferred)
 
 - `automation_runs` run-logging — explicitly deferred in favor of this item
   (user choice, 2026-06-24). This workflow does not write to
   `automation_runs`.
+- Task-level routing suggestions (`suggested_task_id`) — left null/unused;
+  too granular to guess reliably from an email, stays a manual step.
 - Any UI surface for reviewing AI-classification accuracy — rows land in
-  `inbox_items` via the existing Inbox view; no new UI.
+  `inbox_items` via the existing Inbox view; no new UI. (Note: the Inbox
+  view's conversion flow may or may not currently surface
+  `suggested_area_id` etc. to the user — verifying/wiring that display is
+  not part of this spec; it's a pre-existing UI gap if so.)
 - Workflow JSON version control automation beyond a manual export — per
   n8n's own `CLAUDE.md` TODO, export to `flows/<name>.json` there is a
   separate housekeeping task, not blocking this workflow.
 
-## 8. Definition of done
+## 9. Definition of done
 
-1. Workflow built in n8n, inactive.
-2. Manual test run against real unread mail: Claude classification looks
-   sane (spot-check a few important + a few skipped), `inbox_items` rows from
-   the true branch match the mapping in section 3, processed messages get
-   `LIVAL/Processed` + marked read.
-3. User confirms results; workflow activated for live polling.
-4. `docs/ingestion/README.md` gets an n8n producer section (mirrors the
-   existing Claude Code hook / Apple Shortcut sections).
-5. Kanban gets a new task row `3-11` ("n8n: Gmail capture workflow") added
-   to the existing "Ingestion Endpoints (Edge Functions)" phase — CLAUDE.md
-   already frames n8n wiring as part of Phase 3 ingestion scope, so it stays
-   under that phase rather than a new one.
+1. `list-routing-targets`: deno tests pass, deployed `--no-verify-jwt`,
+   live-verified via curl (real areas/workspaces/projects returned).
+2. `ingest-quick-capture` modification: deno tests pass (old + new cases),
+   redeployed, live-verified that a request with suggested_* fields inserts
+   correctly and a request without them still works (no regression for
+   existing producers).
+3. n8n workflow built in n8n, inactive.
+4. Manual test run against real unread mail: Claude classification and
+   routing suggestions look sane (spot-check a few important + a few
+   skipped, a few client-routed + a few with no match), `inbox_items` rows
+   match the mapping in section 3, processed messages get `LIVAL/Processed`
+   + marked read.
+5. User confirms results; workflow activated for live polling.
+6. `docs/ingestion/README.md` gets a `list-routing-targets` entry and an n8n
+   producer section (mirrors the existing Claude Code hook / Apple Shortcut
+   sections).
+7. Kanban gets new task rows under the existing "Ingestion Endpoints (Edge
+   Functions)" phase — CLAUDE.md already frames n8n wiring as part of Phase 3
+   ingestion scope, so this stays under that phase rather than a new one:
+   `3-11` ("Edge function: list-routing-targets"), `3-12` ("Modify
+   ingest-quick-capture for routing suggestions"), `3-13` ("n8n: Gmail
+   capture workflow").
