@@ -1,6 +1,6 @@
 # LIVAL OS — Ingestion Endpoints
 
-Three Supabase Edge Functions accept external writes authenticated by a shared
+Four Supabase Edge Functions accept external writes authenticated by a shared
 bearer secret (`LIVAL_INGEST_SECRET`). Base URL:
 
 ```
@@ -56,6 +56,21 @@ Fields: `file_path` (required); optional `change_type`
 `github_url`, `summary`, `source` (default `claude_code`), `metadata`
 (arbitrary JSON object, default `{}`). No idempotency key — `file_changes`
 has no unique constraint, so re-posting the same change inserts a new row.
+
+## ingest-activity-event → Activity events
+
+```bash
+curl -X POST \
+  https://mfcdzgkhmzppfctdzhwy.supabase.co/functions/v1/ingest-activity-event \
+  -H "Authorization: Bearer $LIVAL_INGEST_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{"entity_type":"task","event_type":"status_changed","message":"Task moved to Done"}'
+```
+
+Fields: `entity_type`, `event_type`, `message` (all required, free text — no
+enum); optional `entity_id` (uuid), `metadata` (arbitrary JSON object,
+default `{}`). No idempotency key — `activity_events` has no unique
+constraint, so re-posting inserts a new row.
 
 ## Producer: Claude Code time tracking (hook)
 
