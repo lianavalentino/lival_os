@@ -9,6 +9,10 @@ export const quickCaptureSchema = z.object({
   source: z.string().default("shortcut"),
   source_url: z.string().optional(),
   received_at: z.string().datetime().optional(),
+  suggested_area_id: z.string().uuid().optional(),
+  suggested_workspace_id: z.string().uuid().optional(),
+  suggested_project_id: z.string().uuid().optional(),
+  confidence: z.number().min(0).max(1).optional(),
 });
 
 export type QuickCaptureInput = z.infer<typeof quickCaptureSchema>;
@@ -21,6 +25,10 @@ export interface InboxRow {
   source: string;
   source_url: string | null;
   received_at?: string;
+  suggested_area_id: string | null;
+  suggested_workspace_id: string | null;
+  suggested_project_id: string | null;
+  confidence: number | null;
   status: "new";
 }
 
@@ -33,6 +41,10 @@ export function toInboxRow(input: QuickCaptureInput, userId: string): InboxRow {
     source: input.source,
     source_url: input.source_url ?? null,
     ...(input.received_at ? { received_at: input.received_at } : {}),
+    suggested_area_id: input.suggested_area_id ?? null,
+    suggested_workspace_id: input.suggested_workspace_id ?? null,
+    suggested_project_id: input.suggested_project_id ?? null,
+    confidence: input.confidence ?? null,
     status: "new",
   };
 }

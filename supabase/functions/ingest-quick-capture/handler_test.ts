@@ -30,8 +30,29 @@ Deno.test("toInboxRow: applies defaults and status new", () => {
     type: "note",
     source: "shortcut",
     source_url: null,
+    suggested_area_id: null,
+    suggested_workspace_id: null,
+    suggested_project_id: null,
+    confidence: null,
     status: "new",
   });
+});
+
+Deno.test("toInboxRow: maps suggested_* fields and confidence when provided", () => {
+  const row = toInboxRow(
+    quickCaptureSchema.parse({
+      title: "Client email",
+      suggested_area_id: "c920c2a8-b910-46e6-b9d6-9c10e6e56389",
+      suggested_workspace_id: "d47bf23f-c8b0-4861-849d-e4d5dd8d72cb",
+      suggested_project_id: "3f23f3b3-2637-4a50-a074-9ed18333fe87",
+      confidence: 0.92,
+    }),
+    USER,
+  );
+  assertEquals(row.suggested_area_id, "c920c2a8-b910-46e6-b9d6-9c10e6e56389");
+  assertEquals(row.suggested_workspace_id, "d47bf23f-c8b0-4861-849d-e4d5dd8d72cb");
+  assertEquals(row.suggested_project_id, "3f23f3b3-2637-4a50-a074-9ed18333fe87");
+  assertEquals(row.confidence, 0.92);
 });
 
 Deno.test("handler: 401 on wrong secret", async () => {
@@ -53,6 +74,13 @@ Deno.test("handler: 400 on missing title", async () => {
   assertEquals((await res.json()).error, "validation");
 });
 
+Deno.test("handler: 400 on invalid suggested_area_id (not a uuid)", async () => {
+  const handler = createQuickCaptureHandler({ secret: SECRET, userId: USER, db: fakeDb([]) });
+  const res = await handler(post({ title: "Hi", suggested_area_id: "not-a-uuid" }));
+  assertEquals(res.status, 400);
+  assertEquals((await res.json()).error, "validation");
+});
+
 Deno.test("handler: 201 inserts row with user_id and status new", async () => {
   const captured: InboxRow[] = [];
   const handler = createQuickCaptureHandler({ secret: SECRET, userId: USER, db: fakeDb(captured) });
@@ -62,4 +90,20 @@ Deno.test("handler: 201 inserts row with user_id and status new", async () => {
   assertEquals(captured[0].user_id, USER);
   assertEquals(captured[0].type, "task");
   assertEquals(captured[0].status, "new");
+});
+
+Deno.test("handler: 201 inserts row with suggested_* fields and confidence when provided", async () => {
+  const captured: InboxRow[] = [];
+  const handler = createQuickCaptureHandler({ secret: SECRET, userId: USER, db: fakeDb(captured) });
+  const res = await handler(post({
+    title: "Client renewal email",
+    type: "email",
+    suggested_area_id: "c920c2a8-b910-46e6-b9d6-9c10e6e56389",
+    confidence: 0.8,
+  }));
+  assertEquals(res.status, 201);
+  assertEquals(captured[0].suggested_area_id, "c920c2a8-b910-46e6-b9d6-9c10e6e56389");
+  assertEquals(captured[0].suggested_workspace_id, null);
+  assertEquals(captured[0].suggested_project_id, null);
+  assertEquals(captured[0].confidence, 0.8);
 });
