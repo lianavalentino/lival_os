@@ -22,8 +22,11 @@ curl -X POST \
 
 Fields: `title` (required); optional `body`, `type`
 (`email|appointment|idea|resource|note|task|other`, default `note`),
-`source` (default `shortcut`), `source_url`, `received_at` (ISO8601).
-Row lands in the Inbox view with status `new`.
+`source` (default `shortcut`), `source_url`, `received_at` (ISO8601),
+`suggested_area_id`/`suggested_workspace_id`/`suggested_project_id` (uuid),
+`confidence` (0–1). Row lands in the Inbox view with status `new`. Omit the
+suggestion fields entirely when there's no routing guess — don't send
+`null` (the schema treats them as optional, not nullable).
 
 ## ingest-time-entry → Time entries
 
