@@ -3,6 +3,28 @@
 ## Purpose
 Private personal operating system: daily orientation, task capture, project visibility, weekly evidence. Single-user, self-owned.
 
+**This repo is the only thing called LIVAL OS.** Two other systems shared the name until
+2026-08-02 — a `TASKS.md`→Notion→HTML-artifact pipeline in `~/Developer/`, and the
+`command-center-work-os` folder that fed it. Both were retired; their contents are in
+`docs/archive/prototype-2026-06/`. The `lival-sync` and `lival-scope` skills were deleted with
+them. Moved here from `~/Documents/LianaOS` on the same date.
+
+## Where this connects
+- **Supabase is the only system of record.** Project ref `mfcdzgkhmzppfctdzhwy`. Nothing else
+  holds authoritative task state — no markdown file, no Google Sheet, no Notion database.
+- **Inbound, live:** Claude Code session hooks (`~/.claude/hooks/lival-session-{start,end}.sh`)
+  POST elapsed session time to the `ingest-time-entry` edge function on every session end.
+  These are global hooks in `~/.claude/settings.json`, not repo-local — they survive
+  independently of this directory and are keyed to the Supabase URL, not to a filesystem path.
+- **Inbound, planned:** Notion becomes a phone-first **capture source** feeding
+  `ingest-quick-capture` — not a mirror, and not a source of truth. Gmail (via n8n) and Siri
+  Shortcuts are peers of it. See `docs/superpowers/specs/2026-06-24-n8n-gmail-capture-design.md`;
+  the Notion variant swaps the trigger node and keeps everything downstream.
+- **Not connected to:** `personal/kanban/` (a separate scaffold, never built) or any
+  `TASKS.md` roll-up. If you find a doc claiming otherwise, it predates 2026-08-02.
+- **Secrets:** `LIVAL_INGEST_SECRET` lives in `~/.claude/settings.json` env (for the hooks) and
+  in Supabase function secrets (for the functions). Never in this repo.
+
 ## Stack
 - Vite + React 19 + TypeScript
 - Custom CSS (hand-written CSS variables in `src/styles.css` — no Tailwind, no PostCSS, no build-time CSS framework)
