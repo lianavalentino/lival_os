@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LIVAL OS</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{color-scheme:light}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0f172a;--navy2:#1e293b;--navy3:#334155;
+  --purple:#7c3aed;--purple-light:#a78bfa;--purple-bg:#f5f3ff;
+  --canvas:#f8fafc;--white:#ffffff;
+  --text:#1e293b;--text2:#475569;--text3:#94a3b8;
+  --border:#e2e8f0;--border2:#cbd5e1;
+  --green:#10b981;--green-bg:#ecfdf5;--green-text:#065f46;
+  --red:#ef4444;--red-bg:#fef2f2;--red-text:#991b1b;
+  --amber:#f59e0b;--amber-bg:#fffbeb;--amber-text:#92400e;
+  --blue:#3b82f6;--blue-bg:#eff6ff;--blue-text:#1e40af;
+  --radius:8px;--radius-lg:12px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--canvas);color:var(--text);display:flex;height:100vh;overflow:hidden;font-size:14px}
+#sidebar{width:220px;min-width:220px;background:var(--navy);display:flex;flex-direction:column;height:100vh;overflow-y:auto}
+.brand{padding:20px 16px 12px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.brand-name{color:#fff;font-size:15px;font-weight:600;letter-spacing:.3px}
+.brand-sub{color:var(--text3);font-size:11px;margin-top:2px}
+nav{padding:8px 0;flex:1}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 16px;color:#94a3b8;font-size:13px;cursor:pointer;transition:all .15s;user-select:none}
+.nav-item:hover{background:rgba(255,255,255,0.05);color:#e2e8f0}
+.nav-item.active{background:rgba(124,58,237,0.2);color:var(--purple-light);border-right:2px solid var(--purple)}
+.nav-icon{font-size:15px;width:18px;text-align:center}
+.nav-sep{height:1px;background:rgba(255,255,255,0.06);margin:6px 16px}
+.quick-capture{padding:12px 16px;border-top:1px solid rgba(255,255,255,0.06)}
+.qc-label{color:var(--text3);font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px}
+.qc-btn{display:flex;align-items:center;gap:8px;padding:6px 10px;color:#94a3b8;font-size:12px;cursor:pointer;border-radius:var(--radius);transition:.15s;width:100%}
+.qc-btn:hover{background:rgba(255,255,255,0.06);color:#e2e8f0}
+.time-card{padding:12px 16px;border-top:1px solid rgba(255,255,255,0.06);margin-bottom:4px}
+.tc-label{color:var(--text3);font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px}
+.tc-hours{color:#fff;font-size:22px;font-weight:600}
+.tc-bars{display:flex;gap:3px;margin-top:8px;align-items:flex-end;height:36px}
+.tc-bar-wrap{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1}
+.tc-bar{width:100%;border-radius:2px 2px 0 0;background:var(--purple);opacity:.7;min-height:2px}
+.tc-day{color:var(--text3);font-size:9px}
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{background:var(--white);border-bottom:1px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar-title{font-size:16px;font-weight:600;color:var(--text)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.topbar-date{font-size:13px;color:var(--text2);background:var(--canvas);border:1px solid var(--border);padding:5px 12px;border-radius:var(--radius);cursor:pointer}
+.topbar-search{display:flex;align-items:center;gap:6px;background:var(--canvas);border:1px solid var(--border);padding:5px 12px;border-radius:var(--radius);color:var(--text3);font-size:13px}
+.topbar-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;background:var(--canvas);border:1px solid var(--border)}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--purple);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer}
+#content{flex:1;overflow-y:auto;padding:24px}
+.page{display:none}
+.page.active{display:block}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:600;color:var(--text)}
+.card-footer{margin-top:12px;padding-top:10px;border-top:1px solid var(--border)}
+.card-link{font-size:12px;color:var(--purple);cursor:pointer;display:flex;align-items:center;gap:4px}
+.card-link:hover{text-decoration:underline}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.badge-high{background:var(--red-bg);color:var(--red-text)}
+.badge-medium{background:var(--amber-bg);color:var(--amber-text)}
+.badge-low{background:var(--green-bg);color:var(--green-text)}
+.badge-purple{background:var(--purple-bg);color:var(--purple)}
+.badge-blue{background:var(--blue-bg);color:var(--blue-text)}
+.badge-green{background:var(--green-bg);color:var(--green-text)}
+.badge-gray{background:#f1f5f9;color:var(--text2)}
+.badge-blocked{background:var(--red-bg);color:var(--red-text)}
+.badge-done{background:var(--green-bg);color:var(--green-text)}
+.badge-inprog{background:var(--blue-bg);color:var(--blue-text)}
+.badge-amber{background:var(--amber-bg);color:var(--amber-text)}
+.task-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:8px;cursor:pointer;transition:.15s}
+.task-card:hover{border-color:var(--purple-light);box-shadow:0 2px 8px rgba(124,58,237,.08)}
+.task-card.dragging{opacity:.4}
+.board-col.drag-over{background:#e9e3fb;outline:2px dashed var(--purple-light);outline-offset:-4px}
+.task-meta{font-size:11px;color:var(--text3);margin-bottom:4px}
+.task-title{font-size:13px;font-weight:500;margin-bottom:6px;color:var(--text)}
+.task-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
+.task-footer{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--text3)}
+.board-wrap{display:flex;gap:12px;overflow-x:auto;padding-bottom:16px;min-height:500px}
+.board-col{min-width:220px;max-width:240px;flex-shrink:0;background:#f1f5f9;border-radius:var(--radius-lg);padding:12px}
+.col-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.col-name{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.col-count{background:var(--white);color:var(--text2);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600}
+.col-blocked .col-name{color:var(--red-text)}
+.col-blocked .col-count{background:var(--red-bg);color:var(--red-text)}
+.col-done .col-name{color:var(--green-text)}
+.filter-bar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.filter-select{border:1px solid var(--border);background:var(--white);padding:6px 10px;border-radius:var(--radius);font-size:12px;color:var(--text2);cursor:pointer}
+.filter-search{flex:1;max-width:220px;border:1px solid var(--border);background:var(--white);padding:6px 10px;border-radius:var(--radius);font-size:12px;color:var(--text);outline:none}
+.filter-search:focus{border-color:var(--purple)}
+.btn{padding:6px 14px;border-radius:var(--radius);font-size:12px;font-weight:500;cursor:pointer;border:none;transition:.15s}
+.btn-primary{background:var(--purple);color:#fff}
+.btn-primary:hover{background:#6d28d9}
+.btn-primary:disabled{opacity:.6;cursor:default}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--canvas)}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.section-title{font-size:13px;font-weight:600;color:var(--text)}
+.stat-list{display:flex;flex-direction:column;gap:0}
+.stat-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)}
+.stat-row:last-child{border-bottom:none}
+.stat-label{font-size:12px;color:var(--text2)}
+.stat-val{font-size:13px;font-weight:600;color:var(--text)}
+.chart-wrap{position:relative;width:140px;height:140px;margin:0 auto}
+.ring-label{position:absolute;text-align:center;top:50%;left:50%;transform:translate(-50%,-50%)}
+.ring-pct{font-size:18px;font-weight:700;color:var(--text)}
+.ring-sub{font-size:10px;color:var(--text3)}
+.band{margin-bottom:16px}
+.band-label{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:4px 10px;border-radius:20px;display:inline-flex;margin-bottom:8px}
+.band-must{background:#fef2f2;color:#991b1b}
+.band-should{background:#fffbeb;color:#92400e}
+.band-could{background:#f0fdf4;color:#166534}
+.planner-item{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-bottom:6px;display:flex;align-items:flex-start;gap:12px;cursor:pointer;transition:.15s}
+.planner-item:hover{border-color:var(--purple-light)}
+.pi-body{flex:1}
+.pi-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px}
+.pi-meta{font-size:11px;color:var(--text3)}
+.week-cal{border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;background:var(--white)}
+.wc-header{display:grid;grid-template-columns:52px repeat(7,1fr);background:var(--canvas);border-bottom:1px solid var(--border)}
+.wc-day{padding:8px;text-align:center;font-size:11px;font-weight:600;color:var(--text2)}
+.wc-day.today{color:var(--purple);font-weight:700}
+.wc-body{display:grid;grid-template-columns:52px repeat(7,1fr)}
+.wc-time{padding:4px 6px;font-size:10px;color:var(--text3);border-right:1px solid var(--border);border-bottom:1px solid var(--border);text-align:right}
+.wc-cell{border-right:1px solid var(--border);border-bottom:1px solid var(--border);min-height:36px;padding:2px}
+.wc-event{border-radius:3px;padding:2px 5px;font-size:10px;font-weight:500;margin-bottom:1px;cursor:pointer;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.ev-purple{background:rgba(124,58,237,.15);color:var(--purple)}
+.ev-blue{background:rgba(59,130,246,.15);color:#1d4ed8}
+.ev-green{background:rgba(16,185,129,.15);color:#065f46}
+.ev-amber{background:rgba(245,158,11,.15);color:#92400e}
+.ev-red{background:rgba(239,68,68,.15);color:#991b1b}
+.project-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;cursor:pointer;transition:.15s}
+.project-card:hover{border-color:var(--purple-light);box-shadow:0 2px 12px rgba(124,58,237,.08)}
+.proj-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px}
+.proj-ws{font-size:12px;color:var(--text3);margin-bottom:10px}
+.progress-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:4px}
+.progress-fill{height:100%;background:var(--purple);border-radius:3px}
+.proj-meta{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--text3);margin-top:8px}
+.proj-group-title{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);margin:20px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.new-project-card{background:var(--canvas);border:1px dashed var(--border2);border-radius:var(--radius-lg);padding:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--text3);font-size:13px;transition:.15s;min-height:80px}
+.new-project-card:hover{border-color:var(--purple);color:var(--purple)}
+.detail-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px}
+.back-link{font-size:12px;color:var(--purple);cursor:pointer;margin-bottom:8px;display:inline-flex;align-items:center;gap:4px}
+.back-link:hover{text-decoration:underline}
+.detail-title{font-size:20px;font-weight:700;color:var(--text)}
+.detail-sub{font-size:13px;color:var(--text3);margin-top:2px}
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px}
+.tab{padding:8px 16px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:.15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--purple);border-bottom-color:var(--purple)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.bd-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.bd-item:last-child{border-bottom:none}
+.bd-title{font-size:13px;color:var(--text);flex:1}
+.bd-meta{display:flex;align-items:center;gap:8px}
+.bd-type{font-size:11px;color:var(--text3);background:var(--canvas);padding:2px 8px;border-radius:20px;border:1px solid var(--border)}
+.bd-date{font-size:11px;color:var(--text3)}
+.bd-actions{display:flex;gap:4px;opacity:0;transition:.15s}
+.bd-item:hover .bd-actions{opacity:1}
+.bd-act{font-size:11px;color:var(--purple);cursor:pointer;padding:2px 6px;border-radius:4px}
+.bd-act:hover{background:var(--purple-bg)}
+.inbox-item{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:12px;cursor:pointer;transition:.15s}
+.inbox-item:hover{background:var(--canvas)}
+.inbox-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.inbox-body{flex:1}
+.inbox-from{font-size:11px;color:var(--text3);margin-bottom:2px}
+.inbox-subject{font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px}
+.inbox-tag{display:inline-flex;align-items:center;font-size:10px;padding:2px 7px;border-radius:20px;border:1px solid var(--border);color:var(--text3);white-space:nowrap}
+.inbox-time{font-size:11px;color:var(--text3);white-space:nowrap}
+.inbox-actions{display:flex;gap:6px}
+.kpi-card{text-align:center;background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px}
+.kpi-val{font-size:28px;font-weight:700;color:var(--text);margin-bottom:2px}
+.kpi-label{font-size:12px;color:var(--text3)}
+.win-item{display:flex;align-items:flex-start;gap:10px;padding:6px 0;font-size:13px;color:var(--text)}
+.win-check{color:var(--green);font-size:14px;flex-shrink:0;margin-top:1px}
+#task-panel{position:fixed;right:0;top:0;width:480px;height:100vh;background:var(--white);border-left:1px solid var(--border);z-index:100;display:none;flex-direction:column;box-shadow:-4px 0 20px rgba(0,0,0,.08)}
+#task-panel.open{display:flex}
+.panel-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between}
+.panel-close{cursor:pointer;color:var(--text3);font-size:18px;padding:4px;line-height:1}
+.panel-body{flex:1;overflow-y:auto;padding:20px}
+.detail-field{margin-bottom:12px}
+.df-label{font-size:11px;color:var(--text3);margin-bottom:3px;font-weight:500;text-transform:uppercase;letter-spacing:.4px}
+.df-val{font-size:13px;color:var(--text)}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:none;align-items:center;justify-content:center}
+#modal.open{display:flex}
+.modal-box{background:var(--white);border-radius:var(--radius-lg);padding:24px;width:480px;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+.modal-title{font-size:16px;font-weight:600;margin-bottom:16px}
+.form-group{margin-bottom:14px}
+.form-label{font-size:12px;font-weight:500;color:var(--text2);margin-bottom:5px;display:block}
+.form-input,.form-select,.form-textarea{width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;font-size:13px;color:var(--text);outline:none;font-family:inherit;background:var(--white)}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--purple)}
+.form-textarea{min-height:80px;resize:vertical}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+.empty-state{text-align:center;padding:40px;color:var(--text3);font-size:13px}
+.divider{height:1px;background:var(--border);margin:14px 0}
+.mini-bar-wrap{display:flex;gap:4px;align-items:flex-end;height:48px;margin-top:8px}
+.mini-bar-item{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1}
+.mini-bar{width:100%;border-radius:2px 2px 0 0;background:var(--purple);opacity:.7;transition:.3s}
+.mini-bar-label{font-size:9px;color:var(--text3)}
+.time-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.tbr-label{font-size:12px;color:var(--text2);width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tbr-bar{flex:1;height:8px;background:var(--canvas);border-radius:4px;overflow:hidden}
+.tbr-fill{height:100%;background:var(--purple);border-radius:4px;opacity:.8}
+.tbr-val{font-size:12px;color:var(--text2);width:36px;text-align:right}
+#panel-dim{display:none;position:fixed;inset:0;background:rgba(0,0,0,.2);z-index:99}
+#panel-dim.open{display:block}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;font-size:12px;padding:8px 16px;border-radius:20px;z-index:300;display:none;align-items:center;gap:8px;box-shadow:0 6px 20px rgba(0,0,0,.2)}
+#toast.show{display:flex}
+.spinner{width:12px;height:12px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+.mb-8{margin-bottom:8px}.mb-12{margin-bottom:12px}.mb-16{margin-bottom:16px}.mb-20{margin-bottom:20px}
+.mt-4{margin-top:4px}.mt-8{margin-top:8px}.mt-12{margin-top:12px}
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <div class="brand">
+    <div class="brand-name">LIVAL OS</div>
+    <div class="brand-sub">Personal Command Center</div>
+  </div>
+  <nav id="nav">
+    <div class="nav-item active" data-page="command-center"><span class="nav-icon">⌘</span> Command Center</div>
+    <div class="nav-item" data-page="daily-planner"><span class="nav-icon">☀</span> Daily Planner</div>
+    <div class="nav-item" data-page="weekly-planner"><span class="nav-icon">📅</span> Weekly Planner</div>
+    <div class="nav-item" data-page="board"><span class="nav-icon">⬡</span> Board</div>
+    <div class="nav-sep"></div>
+    <div class="nav-item" data-page="projects"><span class="nav-icon">◈</span> Projects</div>
+    <div class="nav-item" data-page="inbox"><span class="nav-icon">✉</span> Inbox</div>
+    <div class="nav-item" data-page="brain-dump"><span class="nav-icon">💡</span> Brain Dump</div>
+    <div class="nav-item" data-page="resources"><span class="nav-icon">📚</span> Resources</div>
+    <div class="nav-sep"></div>
+    <div class="nav-item" data-page="reports"><span class="nav-icon">◉</span> Reports</div>
+    <div class="nav-item" data-page="archive"><span class="nav-icon">🗃</span> Archive</div>
+  </nav>
+  <div class="quick-capture">
+    <div class="qc-label">Quick Capture</div>
+    <div class="qc-btn" onclick="openModal('task')">＋ Add Task</div>
+    <div class="qc-btn" onclick="openModal('braindump')">＋ Brain Dump</div>
+    <div class="qc-btn" onclick="openModal('resource')">＋ Add Resource</div>
+    <div class="qc-btn" style="color:#64748b;cursor:default">⏱ Log Time (Code)</div>
+  </div>
+  <div class="time-card">
+    <div class="tc-label">This Week's Time</div>
+    <div class="tc-hours" id="sidebar-hours">34.2h</div>
+    <div class="tc-bars" id="sidebar-bars"></div>
+  </div>
+</div>
+
+<div id="main">
+  <div class="topbar">
+    <div class="topbar-title" id="page-title">Command Center</div>
+    <div class="topbar-right">
+      <div class="topbar-date">Mon, Jun 15, 2026</div>
+      <div class="topbar-search">🔍 Search…</div>
+      <div class="topbar-icon" title="Refresh from Notion" onclick="reloadData()">⟳</div>
+      <div class="topbar-icon">🔔</div>
+      <div class="avatar">L</div>
+    </div>
+  </div>
+  <div id="content">
+
+    <!-- COMMAND CENTER -->
+    <div class="page active" id="page-command-center">
+      <div class="grid-4 mb-16">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Today's Top 3</div></div>
+          <div id="top3-list"></div>
+          <div class="card-footer"><div class="card-link" onclick="navigate('daily-planner')">View all in Daily Planner →</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Inbox Overview</div></div>
+          <div style="font-size:13px;color:var(--text3);margin-bottom:10px"><span id="cc-inbox-count">0</span> items awaiting review</div>
+          <div class="stat-list" id="cc-inbox-stats"></div>
+          <div class="card-footer"><div class="card-link" onclick="navigate('inbox')">Open Inbox →</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Weekly Progress</div></div>
+          <div class="chart-wrap"><canvas id="weeklyChart"></canvas><div class="ring-label"><div class="ring-pct" id="cc-done-count">0</div><div class="ring-sub" id="cc-done-sub">of 0 tasks</div></div></div>
+          <div class="mt-12 stat-list" id="cc-area-stats"></div>
+          <div class="card-footer"><div class="card-link" onclick="navigate('reports')">View full report →</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Time This Week</div></div>
+          <div style="font-size:28px;font-weight:700;color:var(--text);margin-bottom:12px" id="cc-time-total">0h</div>
+          <div id="cc-time-bars"></div>
+          <div class="card-footer"><div class="card-link" onclick="navigate('reports')">View time report →</div></div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card" style="overflow:hidden">
+          <div class="card-header"><div class="card-title">Board Preview</div><button class="btn btn-ghost" style="font-size:11px" onclick="navigate('board')">Full Board</button></div>
+          <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px" id="board-preview"></div>
+          <div class="card-footer"><div class="card-link" onclick="navigate('board')">View full board →</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Quick Stats</div></div>
+          <div class="stat-list" id="cc-quick-stats"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DAILY PLANNER -->
+    <div class="page" id="page-daily-planner">
+      <div class="section-head mb-16">
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-ghost">← Prev</button>
+          <span class="topbar-date" style="background:var(--white)">Mon, Jun 15, 2026</span>
+          <button class="btn btn-ghost">Next →</button>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary">Auto Plan</button>
+          <button class="btn btn-ghost">⋯</button>
+        </div>
+      </div>
+      <div class="grid-2" style="gap:20px">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Today's Focus</div></div>
+          <div class="band">
+            <div class="band-label band-must">Must Do</div>
+            <div id="must-do-list"></div>
+          </div>
+          <div class="band">
+            <div class="band-label band-should">Should Do</div>
+            <div id="should-do-list"></div>
+          </div>
+          <div class="band">
+            <div class="band-label band-could">Could Do</div>
+            <div id="could-do-list"></div>
+          </div>
+          <div class="card-footer"><button class="btn btn-ghost" style="width:100%">Adjust My Plan</button></div>
+        </div>
+        <div>
+          <div class="card mb-16">
+            <div class="card-header"><div class="card-title">Schedule & Deadlines</div></div>
+            <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Appointments</div>
+            <div class="planner-item" style="cursor:default"><div class="pi-body"><div class="pi-title">Dentist Appointment</div><div class="pi-meta">10:00 AM · Health</div></div><span class="badge badge-blue">10am</span></div>
+            <div class="planner-item" style="cursor:default"><div class="pi-body"><div class="pi-title">Call with Mike (ETD)</div><div class="pi-meta">1:00 PM · Client</div></div><span class="badge badge-purple">1pm</span></div>
+            <div class="divider"></div>
+            <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Deadlines</div>
+            <div id="dp-deadlines"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Unplanned Items</div><span class="badge badge-gray" id="dp-unplanned-count">0</span></div>
+            <div id="dp-unplanned"></div>
+            <div class="card-footer"><div class="card-link" onclick="navigate('inbox')">Review in Inbox →</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WEEKLY PLANNER -->
+    <div class="page" id="page-weekly-planner">
+      <div class="section-head mb-16">
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-ghost">← Prev Week</button>
+          <span class="topbar-date" style="background:var(--white)">Week of Jun 15 – Jun 21, 2026</span>
+          <button class="btn btn-ghost">Next Week →</button>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary">Auto Plan</button>
+          <button class="btn btn-ghost">⋯</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:280px 1fr;gap:20px">
+        <div>
+          <div class="card mb-16">
+            <div class="card-header"><div class="card-title">This Week's Outcomes</div></div>
+            <div id="weekly-outcomes"></div>
+          </div>
+          <div class="card mb-16">
+            <div class="card-header"><div class="card-title">Focus Areas</div></div>
+            <div id="focus-areas"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Open Loops</div><span class="badge badge-gray">5</span></div>
+            <div id="open-loops"></div>
+          </div>
+        </div>
+        <div class="card" style="overflow:auto">
+          <div class="card-header"><div class="card-title">Weekly Calendar</div></div>
+          <div id="week-cal"></div>
+          <div class="card-footer"><div class="card-link">View full calendar →</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOARD -->
+    <div class="page" id="page-board">
+      <div class="filter-bar">
+        <select class="filter-select" id="filter-area" onchange="filterBoard()">
+          <option>All Areas</option><option>Client</option><option>Build Lab</option><option>Job Search</option><option>Life Admin</option><option>Home Ops</option>
+        </select>
+        <select class="filter-select" id="filter-priority" onchange="filterBoard()">
+          <option>All Priorities</option><option>High</option><option>Medium</option><option>Low</option>
+        </select>
+        <input class="filter-search" id="filter-search" placeholder="🔍 Search tasks…" oninput="filterBoard()">
+        <div style="flex:1"></div>
+        <button class="btn btn-primary" onclick="openModal('task')">＋ Add Task</button>
+      </div>
+      <div class="board-wrap" id="board-columns"></div>
+    </div>
+
+    <!-- PROJECTS -->
+    <div class="page" id="page-projects">
+      <div class="section-head mb-16">
+        <div style="display:flex;gap:8px">
+          <select class="filter-select"><option>All Areas</option><option>Client</option><option>Build Lab</option><option>Job Search</option><option>Life Admin</option><option>Home Ops</option></select>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('project')">＋ New Project</button>
+      </div>
+      <div id="projects-list"></div>
+    </div>
+
+    <!-- PROJECT DETAIL -->
+    <div class="page" id="page-project-detail">
+      <div class="back-link" onclick="navigate('projects')">← Back to Projects</div>
+      <div class="detail-header">
+        <div>
+          <div class="detail-title" id="pd-title"></div>
+          <div class="detail-sub" id="pd-sub"></div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="badge" id="pd-status"></span>
+          <button class="btn btn-ghost">Edit</button>
+        </div>
+      </div>
+      <div class="tabs" id="pd-tabs">
+        <div class="tab active" onclick="switchTab('pd',this,'overview')">Overview</div>
+        <div class="tab" onclick="switchTab('pd',this,'tasks')">Tasks</div>
+        <div class="tab" onclick="switchTab('pd',this,'time')">Time</div>
+        <div class="tab" onclick="switchTab('pd',this,'notes')">Notes</div>
+        <div class="tab" onclick="switchTab('pd',this,'activity')">Activity</div>
+      </div>
+      <div class="tab-content active" id="pd-tab-overview">
+        <div class="grid-2">
+          <div>
+            <div class="card mb-16">
+              <div class="card-header"><div class="card-title">Progress</div></div>
+              <div style="display:flex;align-items:center;gap:16px">
+                <div><div style="font-size:36px;font-weight:700;color:var(--purple)" id="pd-pct">80%</div><span class="badge badge-green mt-4" id="pd-health-badge">On Track</span></div>
+                <div style="font-size:13px;color:var(--text2)"><div id="pd-milestones">Progress this cycle</div><div class="mt-4" style="font-size:11px;color:var(--text3)" id="pd-target-label"></div></div>
+              </div>
+              <div class="progress-bar mt-12"><div class="progress-fill" id="pd-progress-fill" style="width:80%"></div></div>
+            </div>
+            <div class="card">
+              <div class="card-header"><div class="card-title">Project Info</div></div>
+              <div id="pd-info"></div>
+            </div>
+          </div>
+          <div>
+            <div class="card mb-16">
+              <div class="card-header"><div class="card-title">Time Tracking This Week</div></div>
+              <div style="font-size:28px;font-weight:700;color:var(--text)" id="pd-time-total">12.3h</div>
+              <div class="mini-bar-wrap" id="pd-time-bars"></div>
+              <div class="card-footer"><div class="card-link" onclick="navigate('reports')">View full time report →</div></div>
+            </div>
+            <div class="card mb-16">
+              <div class="card-header"><div class="card-title">Recent Activity</div></div>
+              <div class="stat-list">
+                <div class="stat-row"><span class="stat-label">✓ Task completed: Update labor section</span></div>
+                <div class="stat-row"><span class="stat-label">⏱ Time logged: 1.2h via Claude Code</span></div>
+                <div class="stat-row"><span class="stat-label">📎 File added: pricing_v2.xlsx</span></div>
+                <div class="stat-row"><span class="stat-label">📝 Note added: Client feedback</span></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><div class="card-title">Upcoming Tasks</div></div>
+              <div id="pd-upcoming"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-content" id="pd-tab-tasks"><div id="pd-all-tasks"></div></div>
+      <div class="tab-content" id="pd-tab-time"><div class="card"><div class="card-title mb-12">Time by Day</div><div class="mini-bar-wrap" id="pd-time-detail"></div></div></div>
+      <div class="tab-content" id="pd-tab-notes"><div class="card"><div class="empty-state">No notes yet.</div></div></div>
+      <div class="tab-content" id="pd-tab-activity"><div class="card"><div class="empty-state">Activity log will appear here.</div></div></div>
+    </div>
+
+    <!-- TASK DETAIL (full page fallback) -->
+    <div class="page" id="page-task-detail">
+      <div class="back-link" onclick="navigate('board')">← Back to Board</div>
+      <div class="detail-header">
+        <div>
+          <div class="detail-title" id="td-title">Update pricing logic</div>
+          <div class="detail-sub">ETD / Enertia ROI Calculator</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="badge badge-inprog">In Progress</span>
+          <button class="btn btn-ghost">⋯</button>
+        </div>
+      </div>
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('td',this,'details')">Details</div>
+        <div class="tab" onclick="switchTab('td',this,'subtasks')">Subtasks</div>
+        <div class="tab" onclick="switchTab('td',this,'files')">Files</div>
+        <div class="tab" onclick="switchTab('td',this,'notes')">Notes</div>
+        <div class="tab" onclick="switchTab('td',this,'activity')">Activity</div>
+      </div>
+      <div class="tab-content active" id="td-tab-details">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title mb-12">Task Details</div>
+            <div id="td-details-body"></div>
+          </div>
+          <div class="card">
+            <div class="card-title mb-12">Time Tracking</div>
+            <div style="font-size:28px;font-weight:700;color:var(--text)" id="td-time-total">2.4h</div>
+            <div class="mini-bar-wrap" id="td-time-bars"></div>
+            <div style="font-size:11px;color:var(--purple);margin-top:12px">Auto-tracked via Claude Code</div>
+            <div class="card-footer"><div class="card-link" onclick="navigate('reports')">View full time report →</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-content" id="td-tab-subtasks"><div class="card"><div class="empty-state">No subtasks yet.</div></div></div>
+      <div class="tab-content" id="td-tab-files"><div class="card"><div class="empty-state">No files attached.</div></div></div>
+      <div class="tab-content" id="td-tab-notes"><div class="card"><div class="empty-state">No notes yet.</div></div></div>
+      <div class="tab-content" id="td-tab-activity"><div class="card">
+        <div class="stat-list">
+          <div class="stat-row"><span class="stat-label">⏱ Time tracked: 32m</span><span style="font-size:11px;color:var(--text3)">2h ago</span></div>
+          <div class="stat-row"><span class="stat-label">📎 File added: pricing_v2.xlsx</span><span style="font-size:11px;color:var(--text3)">Yesterday</span></div>
+          <div class="stat-row"><span class="stat-label">📝 Note added: Client feedback</span><span style="font-size:11px;color:var(--text3)">Jun 10</span></div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- INBOX -->
+    <div class="page" id="page-inbox">
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('inb',this,'all')">All <span class="badge badge-gray" style="margin-left:4px" id="inb-c-all">0</span></div>
+        <div class="tab" onclick="switchTab('inb',this,'emails')">Emails <span class="badge badge-gray" style="margin-left:4px" id="inb-c-emails">0</span></div>
+        <div class="tab" onclick="switchTab('inb',this,'appointments')">Appointments <span class="badge badge-gray" style="margin-left:4px" id="inb-c-appointments">0</span></div>
+        <div class="tab" onclick="switchTab('inb',this,'ideas')">Ideas <span class="badge badge-gray" style="margin-left:4px" id="inb-c-ideas">0</span></div>
+        <div class="tab" onclick="switchTab('inb',this,'resources')">Resources <span class="badge badge-gray" style="margin-left:4px" id="inb-c-resources">0</span></div>
+      </div>
+      <div class="card" style="padding:0">
+        <div class="tab-content active" id="inb-tab-all"><div id="inbox-list"></div></div>
+        <div class="tab-content" id="inb-tab-emails"><div id="inbox-list-emails"></div></div>
+        <div class="tab-content" id="inb-tab-appointments"><div id="inbox-list-appointments"></div></div>
+        <div class="tab-content" id="inb-tab-ideas"><div id="inbox-list-ideas"></div></div>
+        <div class="tab-content" id="inb-tab-resources"><div id="inbox-list-resources"></div></div>
+      </div>
+    </div>
+
+    <!-- BRAIN DUMP -->
+    <div class="page" id="page-brain-dump">
+      <div class="section-head mb-16">
+        <div class="tabs" style="border-bottom:none;margin-bottom:0">
+          <div class="tab active" onclick="switchTab('bd',this,'all')">All</div>
+          <div class="tab" onclick="switchTab('bd',this,'ideas')">Ideas</div>
+          <div class="tab" onclick="switchTab('bd',this,'thoughts')">Thoughts</div>
+          <div class="tab" onclick="switchTab('bd',this,'someday')">Someday/Maybe</div>
+          <div class="tab" onclick="switchTab('bd',this,'links')">Links</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <input class="filter-search" style="max-width:200px" placeholder="🔍 Search ideas…">
+          <button class="btn btn-primary" onclick="openModal('braindump')">＋ Add Idea</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="tab-content active" id="bd-tab-all"><div id="bd-list"></div></div>
+        <div class="tab-content" id="bd-tab-ideas"><div id="bd-list-ideas"></div></div>
+        <div class="tab-content" id="bd-tab-thoughts"><div id="bd-list-thoughts"></div></div>
+        <div class="tab-content" id="bd-tab-someday"><div id="bd-list-someday"></div></div>
+        <div class="tab-content" id="bd-tab-links"><div id="bd-list-links"></div></div>
+      </div>
+    </div>
+
+    <!-- RESOURCES -->
+    <div class="page" id="page-resources">
+      <div style="display:grid;grid-template-columns:200px 1fr;gap:20px">
+        <div class="card" style="padding:12px;height:fit-content">
+          <div class="card-title mb-12">Categories</div>
+          <div id="resource-cats"></div>
+        </div>
+        <div>
+          <div class="section-head mb-12">
+            <div class="section-title">All Resources <span id="res-active-cat" style="color:var(--text3);font-weight:400"></span></div>
+            <div style="display:flex;gap:8px">
+              <input class="filter-search" placeholder="🔍 Search…">
+              <button class="btn btn-primary" onclick="openModal('resource')">＋ Add Resource</button>
+            </div>
+          </div>
+          <div id="resource-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="page" id="page-reports">
+      <div class="section-head mb-16">
+        <div style="font-size:15px;font-weight:600">Week of Jun 15 — Jun 21, 2026</div>
+        <button class="btn btn-ghost">Export</button>
+      </div>
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('rpt',this,'overview')">Overview</div>
+        <div class="tab" onclick="switchTab('rpt',this,'trends')">Trends</div>
+        <div class="tab" onclick="switchTab('rpt',this,'time')">Time</div>
+        <div class="tab" onclick="switchTab('rpt',this,'tasks')">Tasks</div>
+        <div class="tab" onclick="switchTab('rpt',this,'projects')">Projects</div>
+        <div class="tab" onclick="switchTab('rpt',this,'themes')">Themes</div>
+      </div>
+      <div class="tab-content active" id="rpt-tab-overview">
+        <div class="grid-4 mb-16">
+          <div class="kpi-card"><div class="kpi-val" id="rpt-k-done">0</div><div class="kpi-label">Tasks Completed</div></div>
+          <div class="kpi-card"><div class="kpi-val" id="rpt-k-hours">0h</div><div class="kpi-label">Hours Worked</div></div>
+          <div class="kpi-card"><div class="kpi-val" id="rpt-k-proj">0</div><div class="kpi-label">Active Projects</div></div>
+          <div class="kpi-card"><div class="kpi-val" id="rpt-k-ideas">0</div><div class="kpi-label">Ideas Captured</div></div>
+        </div>
+        <div class="grid-2 mb-16">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Time Allocation</div></div>
+            <div class="chart-wrap"><canvas id="timeAllocChart"></canvas><div class="ring-label"><div class="ring-pct" style="font-size:14px" id="rpt-time-total">0h</div><div class="ring-sub">this week</div></div></div>
+            <div class="mt-12 stat-list" id="rpt-alloc-stats"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Project Investment</div></div>
+            <div id="rpt-proj-invest"></div>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div class="card-title" style="font-size:15px;font-weight:700;color:var(--green)">✦ Weekly Win Log</div></div>
+            <div id="win-log"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Weekly Summary</div></div>
+            <div style="font-size:13px;line-height:1.7;color:var(--text2);margin-bottom:16px" id="rpt-summary">Loading week summary…</div>
+            <div class="divider"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div>
+                <div style="font-size:11px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.6px;font-weight:600">Momentum Score</div>
+                <div style="font-size:36px;font-weight:700;color:var(--purple)"><span id="rpt-momentum">—</span><span style="font-size:16px;color:var(--text3)">/100</span></div>
+                <span class="badge badge-green mt-4" id="rpt-momentum-badge">—</span>
+              </div>
+              <div class="card-link" onclick="navigate('archive')">View previous weeks →</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-content" id="rpt-tab-trends"><div class="card" style="height:320px"><div class="card-title mb-12">Momentum & Hours by Week</div><canvas id="trendsChart"></canvas></div></div>
+      <div class="tab-content" id="rpt-tab-time"><div class="card"><div class="card-title mb-12">Time by Project</div><div id="rpt-time-detail"></div></div></div>
+      <div class="tab-content" id="rpt-tab-tasks">
+        <div class="grid-2">
+          <div class="card"><div class="card-title mb-12">By Status</div><div id="rpt-tasks-status"></div></div>
+          <div class="card"><div class="card-title mb-12">By Area</div><div id="rpt-tasks-area"></div></div>
+        </div>
+      </div>
+      <div class="tab-content" id="rpt-tab-projects"><div class="card"><div class="card-title mb-12">Project Health</div><div id="rpt-projects-health"></div></div></div>
+      <div class="tab-content" id="rpt-tab-themes"><div class="card"><div class="empty-state">AI-generated weekly themes — coming soon.</div></div></div>
+    </div>
+
+    <!-- ARCHIVE -->
+    <div class="page" id="page-archive">
+      <div class="card" style="max-width:600px">
+        <div class="card-title mb-16">Archived Weeks</div>
+        <div id="archive-list"></div>
+        <div class="card-footer"><div class="card-link">View all archive →</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TASK SIDE PANEL -->
+<div id="panel-dim" onclick="closePanel()"></div>
+<div id="task-panel">
+  <div class="panel-header">
+    <div style="flex:1;min-width:0">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:4px" id="panel-ws"></div>
+      <div style="font-size:15px;font-weight:600;color:var(--text)" id="panel-title"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:12px">
+      <span class="badge" id="panel-status"></span>
+      <div class="panel-close" onclick="closePanel()">✕</div>
+    </div>
+  </div>
+  <div class="panel-body">
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('pnl',this,'details')">Details</div>
+      <div class="tab" onclick="switchTab('pnl',this,'subtasks')">Subtasks</div>
+      <div class="tab" onclick="switchTab('pnl',this,'notes')">Notes</div>
+      <div class="tab" onclick="switchTab('pnl',this,'activity')">Activity</div>
+    </div>
+    <div class="tab-content active" id="pnl-tab-details"><div id="panel-details-body"></div></div>
+    <div class="tab-content" id="pnl-tab-subtasks"><div class="empty-state">No subtasks yet.</div></div>
+    <div class="tab-content" id="pnl-tab-notes"><div class="empty-state">No notes yet.</div></div>
+    <div class="tab-content" id="pnl-tab-activity"><div class="empty-state">Activity will appear here.</div></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-title"></div>
+    <div id="modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="modal-save" onclick="saveModal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+   LIVAL OS — Notion-backed data layer
+   Source of truth: Notion databases under the "LIVAL OS" page.
+   Reads: notion-search (ids) + notion-fetch (properties).
+   Writes: notion-create-pages / notion-update-page.
+   ============================================================ */
+const NS = 'mcp__62fe3d1f-4755-4586-9755-1d5a66769083__';
+const DS = {
+  tasks:     'collection://495dc8ff-f3c2-43cc-a13e-c05a74d06de4',
+  projects:  'collection://f50d8fc2-95ee-4443-9f5d-13a4a1c86551',
+  braindump: 'collection://106cbedb-6315-4c6a-9536-d4c3227ae225',
+  inbox:     'collection://127a196a-1230-44fc-a759-bf3ccf5e002c',
+  resources: 'collection://23491ee3-22e1-4970-8321-d09d4cbd6bc4',
+  wins:      'collection://3d7ba9e1-fe5f-4cbb-8857-5159e2a292e7',
+  archive:   'collection://1ca2378e-3b01-4edd-a55d-9eeaed6acccc',
+};
+const DSID = k => DS[k].replace('collection://','');
+
+const D = {
+  tasks:[], projects:[], braindump:[], inbox:[], resources:[],
+  /* wins + archive are seeded for demo mode; live data from LIVAL Wins /
+     LIVAL Archive overwrites these on load. Shapes match the mappers below. */
+  wins:[
+    {win:'Updated Enertia pricing model',area:'Client',week:'',date:''},
+    {win:'Submitted 5 job applications',area:'Job Search',week:'',date:''},
+    {win:'Defined MVP for Auto Job Apply Agent',area:'Build Lab',week:'',date:''},
+    {win:'Built Home Assistant camera dashboard',area:'Home Ops',week:'',date:''},
+    {win:'Scheduled dentist appointment',area:'Life Admin',week:'',date:''},
+  ],
+  archive:[
+    {week:'Week of Jun 1 — Jun 7, 2026',tasks:19,planned:23,hours:'29.1h',score:85,topArea:'Client',notes:'',date:'',ts:''},
+    {week:'Week of May 25 — May 31, 2026',tasks:22,planned:25,hours:'31.8h',score:88,topArea:'Build Lab',notes:'',date:'',ts:''},
+    {week:'Week of May 18 — May 24, 2026',tasks:17,planned:22,hours:'26.4h',score:79,topArea:'Job Search',notes:'',date:'',ts:''},
+  ],
+};
+
+/* Live momentum = simple completion ratio over the current tasks, matching the
+   lival-weekly-review skill: closed / planned, Backlog excluded. The Archive DB
+   stores historical snapshots; "this week" is computed fresh here. */
+const COMMITTED = ['Done This Week','This Week','In Progress','Blocked'];
+function liveMomentum(){
+  const closed  = D.tasks.filter(t=>t.status==='Done This Week').length;
+  const planned = D.tasks.filter(t=>COMMITTED.includes(t.status)).length;
+  return planned ? Math.round(closed/planned*100) : 0;
+}
+
+function hasCowork(){ return typeof window!=='undefined' && window.cowork && typeof window.cowork.callMcpTool==='function'; }
+
+async function mcp(name, args){
+  const r = await window.cowork.callMcpTool(NS+name, args);
+  if(r && r.isError) throw new Error('Notion '+name+' error');
+  let payload = r && (r.structuredContent ?? (r.content && r.content[0] && r.content[0].text));
+  if(typeof payload==='string'){ try{ payload = JSON.parse(payload); }catch(e){ return payload; } }
+  return payload;
+}
+
+function parsePageProps(pg){
+  let txt = pg;
+  if(txt && typeof txt==='object') txt = txt.text || JSON.stringify(txt);
+  if(typeof txt!=='string') return null;
+  const m = txt.match(/<properties>\s*([\s\S]*?)\s*<\/properties>/);
+  if(!m) return null;
+  try{ return JSON.parse(m[1]); }catch(e){ return null; }
+}
+
+async function readDS(key){
+  const res = await mcp('notion-search', {
+    query: key, query_type:'internal', content_search_mode:'workspace_search',
+    data_source_url: DS[key], page_size:25, max_highlight_length:0
+  });
+  const list = (res && res.results) ? res.results : [];
+  const pages = await Promise.all(list.map(async it => {
+    try { const pg = await mcp('notion-fetch', { id: it.id }); const props = parsePageProps(pg); return props ? Object.assign({id: it.id, _ct: it.created_time||it.createdTime||it.last_edited_time||''}, props) : null; }
+    catch(e){ return null; }
+  }));
+  return pages.filter(Boolean);
+}
+
+/* ---------- mappers: Notion props -> app shape ---------- */
+const ICON_BG = {'✉':'#eff6ff','📅':'#ecfdf5','💡':'#f5f3ff','📄':'#fefce8'};
+const fmtH = n => (Math.round((n||0)*10)/10) + 'h';
+const mapFns = {
+  tasks:    p => ({id:p.id,title:p.Title||'',ws:p.Workspace||'',proj:p.Project||'',area:p.Area||'',pri:p.Priority||'Medium',status:p.Status||'Backlog',due:p.Due||'',time:fmtH(p.Time),timeNum:p.Time||0,labels:Array.isArray(p.Labels)?p.Labels:[]}),
+  projects: p => ({id:p.id,name:p.Name||'',ws:p.Workspace||'',area:p.Area||'',pct:p.Progress||0,health:p.Health||'On Track',time:fmtH(p.Time),timeNum:p.Time||0,target:p.Target||''}),
+  braindump:p => ({id:p.id,title:p.Title||'',type:p.Type||'Idea',date:p.Date||''}),
+  inbox:    p => ({id:p.id,icon:p.Icon||'✉',bg:ICON_BG[p.Icon]||'#eff6ff',from:p.From||'',subj:p.Subject||'',tag:p.Tag||'',time:p.Time||''}),
+  resources:p => ({id:p.id,title:p.Title||'',url:p.Link||'#',cat:p.Category||'Other',proj:p.Project||'—',date:p.Date||''}),
+  wins:     p => ({id:p.id,win:p.Win||p.Title||'',area:p.Area||'',week:p.Week||'',date:p.Date||''}),
+  archive:  p => ({id:p.id,week:p.Week||'',tasks:p['Tasks Closed']||0,planned:p.Planned||0,hours:fmtH(p.Hours),score:Math.round(p.Momentum||0),topArea:p['Top Area']||'',notes:p.Notes||'',date:p.Date||'',ts:p._ct||''}),
+};
+
+async function refreshKey(key){ const rows = await readDS(key); D[key] = rows.map(mapFns[key]); renderAll(); }
+
+async function loadAll(){
+  const [t,pr,bd,ib,rs,wn,ar] = await Promise.all([readDS('tasks'),readDS('projects'),readDS('braindump'),readDS('inbox'),readDS('resources'),readDS('wins'),readDS('archive')]);
+  D.tasks = t.map(mapFns.tasks);
+  D.projects = pr.map(mapFns.projects);
+  D.braindump = bd.map(mapFns.braindump);
+  D.inbox = ib.map(mapFns.inbox);
+  D.resources = rs.map(mapFns.resources);
+  // Only replace seeds when the live DBs actually returned rows, so an empty
+  // (just-created) Wins/Archive doesn't blank the demo content.
+  const wins = wn.map(mapFns.wins);    if(wins.length) D.wins = wins;
+  const arch = ar.map(mapFns.archive); if(arch.length) D.archive = sortArchive(arch);
+}
+
+/* newest week first (matches seed + what renderTrendsChart expects before it
+   reverses to chronological). Sort by Notion created time when available. */
+function sortArchive(rows){
+  return rows.slice().sort((a,b)=> (b.ts||'').localeCompare(a.ts||''));
+}
+
+/* ---------- toast ---------- */
+let toastTimer=null;
+function toast(msg, spin){
+  const t=document.getElementById('toast');
+  t.innerHTML = (spin?'<span class="spinner"></span>':'') + msg;
+  t.classList.add('show');
+  if(toastTimer) clearTimeout(toastTimer);
+  if(!spin) toastTimer=setTimeout(()=>t.classList.remove('show'),1800);
+}
+function hideToast(){ document.getElementById('toast').classList.remove('show'); }
+
+/* ============================================================
+   Navigation + tabs
+   ============================================================ */
+const PAGE_NAMES = {'command-center':'Command Center','daily-planner':'Daily Planner','weekly-planner':'Weekly Planner','board':'Board','projects':'Projects','project-detail':'Project Detail','task-detail':'Task Detail','inbox':'Inbox','brain-dump':'Brain Dump','resources':'Resources','reports':'Reports','archive':'Archive'};
+
+function navigate(page, data) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const pg = document.getElementById('page-' + page);
+  if (pg) pg.classList.add('active');
+  const nav = document.querySelector('[data-page="'+page+'"]');
+  if (nav) nav.classList.add('active');
+  document.getElementById('page-title').textContent = PAGE_NAMES[page] || page;
+  if (page === 'project-detail' && data != null) loadProjectDetail(data);
+  if (page === 'task-detail' && data != null) loadTaskDetail(data);
+}
+document.querySelectorAll('.nav-item').forEach(el => el.addEventListener('click', () => navigate(el.dataset.page)));
+
+function switchTab(ns, el, id) {
+  const scope = el.closest('.page') || el.closest('.panel-body') || el.closest('#content');
+  if (scope) {
+    scope.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    scope.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    const tc = scope.querySelector('#'+ns+'-tab-'+id);
+    if (tc) tc.classList.add('active');
+  }
+}
+
+/* ============================================================
+   Renderers
+   ============================================================ */
+const STATUSES = ['Backlog','This Week','In Progress','Blocked','Done This Week'];
+const AREAS = ['Client','Build Lab','Job Search','Job Search','Life Admin','Home Ops'];
+const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+function renderMiniBars(id, vals) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const days = ['M','T','W','T','F','S','S'];
+  const max = Math.max(...vals, 0.1);
+  el.innerHTML = vals.map((v,i) => `<div class="mini-bar-item"><div class="mini-bar" style="height:${Math.max(Math.round((v/max)*40),2)}px"></div><span class="mini-bar-label">${days[i]}</span></div>`).join('');
+}
+
+function renderSidebarBars() {
+  const vals = [4.2,6.8,7.1,5.9,6.2,3.2,0.8];
+  const days = ['M','T','W','T','F','S','S'];
+  const max = Math.max(...vals);
+  document.getElementById('sidebar-bars').innerHTML = vals.map((v,i) => `<div class="tc-bar-wrap"><div class="tc-bar" style="height:${Math.max(Math.round((v/max)*28),2)}px"></div><div class="tc-day">${days[i]}</div></div>`).join('');
+  const total = D.tasks.reduce((s,t)=>s+t.timeNum,0);
+  if(total>0) document.getElementById('sidebar-hours').textContent = fmtH(total);
+}
+
+function renderTop3() {
+  const top = D.tasks.filter(t => t.pri==='High' && (t.status==='In Progress' || t.due==='Today')).slice(0,3);
+  const el = document.getElementById('top3-list');
+  el.innerHTML = top.length ? top.map((t,i) => `
+    <div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="openTaskPanel('${t.id}')">
+      <div style="width:20px;height:20px;border-radius:50%;background:var(--purple);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">${i+1}</div>
+      <div><div style="font-size:10px;color:var(--text3);margin-bottom:2px">${esc(t.ws)} / ${esc(t.proj)}</div><div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px">${esc(t.title)}</div><div style="display:flex;gap:6px;align-items:center"><span class="badge badge-${t.pri.toLowerCase()}">${t.pri}</span><span style="font-size:10px;color:var(--text3)">${esc(t.due)} · ${esc(t.status)}</span></div></div>
+    </div>`).join('') : '<div class="empty-state" style="padding:18px">No high-priority tasks today.</div>';
+}
+
+function renderBoardPreview() {
+  document.getElementById('board-preview').innerHTML = STATUSES.map(col => {
+    const tasks = D.tasks.filter(t => t.status===col).slice(0,2);
+    return `<div style="min-width:130px;flex-shrink:0;background:#f1f5f9;border-radius:8px;padding:8px">
+      <div style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">${col} <span style="background:var(--white);border-radius:20px;padding:1px 5px">${D.tasks.filter(t=>t.status===col).length}</span></div>
+      ${tasks.map(t=>`<div style="background:var(--white);border:1px solid var(--border);border-radius:5px;padding:5px 7px;margin-bottom:4px;cursor:pointer" onclick="openTaskPanel('${t.id}')"><div style="font-size:9px;color:var(--text3)">${esc(t.ws)}</div><div style="font-size:11px;font-weight:500;color:var(--text)">${esc(t.title)}</div></div>`).join('')}
+    </div>`;
+  }).join('');
+}
+
+function renderBoard(filter={}) {
+  document.getElementById('board-columns').innerHTML = STATUSES.map(col => {
+    let tasks = D.tasks.filter(t => t.status===col);
+    if (filter.area && filter.area!=='All Areas') tasks = tasks.filter(t => t.area===filter.area);
+    if (filter.pri && filter.pri!=='All Priorities') tasks = tasks.filter(t => t.pri===filter.pri);
+    if (filter.search) tasks = tasks.filter(t => t.title.toLowerCase().includes(filter.search.toLowerCase()) || t.ws.toLowerCase().includes(filter.search.toLowerCase()));
+    const cc = col==='Blocked'?'board-col col-blocked':col==='Done This Week'?'board-col col-done':'board-col';
+    return `<div class="${cc}" data-col="${col}" ondragover="boardDragOver(event)" ondragleave="boardDragLeave(event)" ondrop="boardDrop(event,'${col}')">
+      <div class="col-header"><span class="col-name">${col}</span><span class="col-count">${tasks.length}</span></div>
+      ${tasks.map(t=>`<div class="task-card" draggable="true" data-id="${t.id}" ondragstart="boardDragStart(event,'${t.id}')" ondragend="boardDragEnd(event)" onclick="openTaskPanel('${t.id}')">
+        <div class="task-meta">${esc(t.ws)} / ${esc(t.proj)}</div>
+        <div class="task-title">${esc(t.title)}</div>
+        <div class="task-tags">${t.labels.map(l=>`<span class="badge badge-gray">${esc(l)}</span>`).join('')} <span class="badge badge-${t.pri.toLowerCase()}">${t.pri}</span></div>
+        <div class="task-footer"><span>${esc(t.due)}</span><span style="color:var(--purple);font-weight:500">${t.time}</span></div>
+      </div>`).join('')}
+      <div style="font-size:11px;color:var(--text3);padding:4px 0;cursor:pointer" onclick="openModal('task')">＋ Add task</div>
+    </div>`;
+  }).join('');
+}
+
+function filterBoard() {
+  renderBoard({
+    area: document.getElementById('filter-area').value,
+    pri: document.getElementById('filter-priority').value,
+    search: document.getElementById('filter-search').value,
+  });
+}
+
+/* ---------- drag & drop ---------- */
+let dragId=null;
+function boardDragStart(e,id){ dragId=id; e.dataTransfer.effectAllowed='move'; e.target.classList.add('dragging'); }
+function boardDragEnd(e){ e.target.classList.remove('dragging'); document.querySelectorAll('.board-col').forEach(c=>c.classList.remove('drag-over')); }
+function boardDragOver(e){ e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function boardDragLeave(e){ e.currentTarget.classList.remove('drag-over'); }
+async function boardDrop(e,col){
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if(!dragId) return;
+  const t = D.tasks.find(x=>x.id===dragId);
+  if(!t || t.status===col){ dragId=null; return; }
+  const id = dragId; dragId=null;
+  t.status = col; renderAll();          // optimistic
+  await setTaskStatus(id, col);
+}
+
+function renderDailyPlanner() {
+  const must = D.tasks.filter(t => t.pri==='High' && (t.status==='In Progress'||t.due==='Today'));
+  const should = D.tasks.filter(t => t.pri==='Medium' && t.status==='This Week').slice(0,3);
+  const could = D.tasks.filter(t => t.pri==='Low').slice(0,2);
+  const item = t => `<div class="planner-item" onclick="openTaskPanel('${t.id}')"><div class="pi-body"><div class="pi-title">${esc(t.title)}</div><div class="pi-meta">${esc(t.ws)} / ${esc(t.proj)} · ${esc(t.due)}</div></div><span class="badge badge-${t.pri.toLowerCase()}">${t.pri}</span></div>`;
+  const fill=(id,arr)=>{document.getElementById(id).innerHTML = arr.length?arr.map(item).join(''):'<div style="font-size:12px;color:var(--text3);padding:6px 0">Nothing here.</div>';};
+  fill('must-do-list',must); fill('should-do-list',should); fill('could-do-list',could);
+
+  const blocked = D.tasks.filter(t=>t.status==='Blocked');
+  document.getElementById('dp-deadlines').innerHTML =
+    (blocked.length? blocked.map(t=>`<div style="font-size:12px;color:var(--red);margin-bottom:6px;display:flex;align-items:center;gap:6px"><span>🔴</span>Blocked: ${esc(t.title)}</div>`).join('') : '') +
+    must.map(t=>`<div style="font-size:12px;color:var(--amber);display:flex;align-items:center;gap:6px;margin-bottom:4px"><span>🟡</span>Due ${esc(t.due)}: ${esc(t.title)}</div>`).join('');
+
+  const unplanned = D.inbox.filter(i=>i.tag==='Potential Task'||i.tag==='Action Needed'||i.tag==='Idea').slice(0,3);
+  document.getElementById('dp-unplanned-count').textContent = unplanned.length;
+  document.getElementById('dp-unplanned').innerHTML = unplanned.map(i=>`
+    <div class="inbox-item" style="padding:8px 0;border:none">
+      <div class="inbox-icon" style="background:${i.bg}">${i.icon}</div>
+      <div class="inbox-body"><div class="inbox-from">From ${esc(i.from)}</div><div class="inbox-subject">${esc(i.subj)}</div></div>
+      <span class="inbox-tag">${esc(i.tag)}</span>
+    </div>`).join('');
+}
+
+function renderWeeklyPlanner() {
+  const outcomes = ['Finish ETD calculator updates','Apply to 5 roles','Build Auto Job Apply Agent MVP outline','Schedule dentist appointment','Review Bistro website copy'];
+  document.getElementById('weekly-outcomes').innerHTML = outcomes.map((o,i)=>`<div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;align-items:flex-start"><span style="color:var(--purple);font-weight:700;flex-shrink:0">${i+1}</span>${o}</div>`).join('');
+  const focus = D.projects.filter(p=>p.health==='Needs Attention'||p.health==='Blocked').map(p=>`${p.ws} — ${p.health}`);
+  const focusList = focus.length?focus:['Bistro — waiting for content','Emergent — need API access'];
+  document.getElementById('focus-areas').innerHTML = focusList.map((f,i)=>`<div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2);align-items:flex-start"><span style="color:var(--amber);font-weight:700;flex-shrink:0">${i+1}</span>${esc(f)}</div>`).join('');
+  const loops = ['Follow up with Mike on pricing','Get access to ETD data source','Review job applications','Book dentist follow-up','Send Bistro feedback'];
+  document.getElementById('open-loops').innerHTML = loops.map(l=>`<div style="display:flex;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;align-items:center"><div style="width:14px;height:14px;border:1.5px solid var(--border2);border-radius:3px;flex-shrink:0"></div>${l}</div>`).join('');
+  renderWeekCalendar();
+}
+
+function renderWeekCalendar() {
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const events = [
+    {day:0,slot:0,label:'Job Search Block',cls:'ev-blue'},{day:0,slot:4,label:'ETD Work Block',cls:'ev-purple'},
+    {day:1,slot:1,label:'Focus Work',cls:'ev-purple'},{day:1,slot:5,label:'Admin',cls:'ev-amber'},
+    {day:2,slot:0,label:'Build Lab',cls:'ev-green'},{day:2,slot:3,label:'Client Call (Bistro)',cls:'ev-blue'},
+    {day:3,slot:1,label:'ETD Work Block',cls:'ev-purple'},{day:3,slot:4,label:'Job Search',cls:'ev-blue'},
+    {day:4,slot:1,label:'Dentist Appt',cls:'ev-red'},{day:4,slot:3,label:'Call w/ Mike (ETD)',cls:'ev-purple'},
+  ];
+  const slots = ['9am','10am','11am','12pm','1pm','2pm','3pm','4pm'];
+  let html = `<div class="wc-header"><div class="wc-day"></div>${days.map((d,i)=>`<div class="wc-day${i===0?' today':''}">${d}${i===0?' ●':''}</div>`).join('')}</div><div class="wc-body">`;
+  slots.forEach((t,si) => {
+    html += `<div class="wc-time">${t}</div>`;
+    for(let di=0;di<7;di++){
+      const evs = events.filter(e=>e.day===di&&e.slot===si);
+      html += `<div class="wc-cell">${evs.map(e=>`<div class="wc-event ${e.cls}">${e.label}</div>`).join('')}</div>`;
+    }
+  });
+  html += '</div>';
+  document.getElementById('week-cal').innerHTML = html;
+}
+
+function renderProjects() {
+  const groups = ['Client','Build Lab','Job Search','Life Admin','Home Ops'];
+  let html = '';
+  groups.forEach(g => {
+    const projs = D.projects.filter(p => p.area===g);
+    if (!projs.length) return;
+    html += `<div class="proj-group-title">${g}</div><div class="grid-4">`;
+    projs.forEach(p => {
+      const hc = p.health==='On Track'?'badge-green':p.health==='Blocked'?'badge-blocked':p.health==='Done'?'badge-done':'badge-amber';
+      html += `<div class="project-card" onclick="navigate('project-detail','${p.id}')">
+        <div class="proj-title">${esc(p.name)}</div><div class="proj-ws">${esc(p.ws)}</div>
+        <div><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3)"><span>Progress</span><span>${p.pct}%</span></div><div class="progress-bar"><div class="progress-fill" style="width:${p.pct}%"></div></div></div>
+        <div class="proj-meta"><span class="badge ${hc}">${p.health}</span><span>${p.time} this week</span></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px">Target: ${esc(p.target)}</div>
+      </div>`;
+    });
+    html += `<div class="new-project-card" onclick="openModal('project')">＋ New Project</div></div>`;
+  });
+  document.getElementById('projects-list').innerHTML = html || '<div class="empty-state">No projects yet.</div>';
+}
+
+function loadProjectDetail(id) {
+  const p = D.projects.find(x=>x.id===id);
+  if (!p) return;
+  document.getElementById('pd-title').textContent = p.ws+' / '+p.name;
+  document.getElementById('pd-sub').textContent = p.area+' · '+p.ws;
+  const sb = document.getElementById('pd-status');
+  sb.textContent = p.health;
+  sb.className = 'badge '+(p.health==='On Track'?'badge-green':p.health==='Blocked'?'badge-blocked':p.health==='Done'?'badge-done':'badge-amber');
+  document.getElementById('pd-pct').textContent = p.pct+'%';
+  document.getElementById('pd-health-badge').textContent = p.health;
+  document.getElementById('pd-health-badge').className = 'badge mt-4 '+(p.health==='On Track'?'badge-green':p.health==='Blocked'?'badge-blocked':p.health==='Done'?'badge-done':'badge-amber');
+  document.getElementById('pd-progress-fill').style.width = p.pct+'%';
+  document.getElementById('pd-target-label').textContent = 'Target: '+p.target;
+  document.getElementById('pd-time-total').textContent = p.time;
+  document.getElementById('pd-info').innerHTML = `
+    <div class="detail-field"><div class="df-label">Client</div><div class="df-val">${esc(p.ws)}</div></div>
+    <div class="detail-field"><div class="df-label">Area</div><div class="df-val">${esc(p.area)}</div></div>
+    <div class="detail-field"><div class="df-label">Health</div><div class="df-val"><span class="badge ${p.health==='On Track'?'badge-green':p.health==='Blocked'?'badge-blocked':p.health==='Done'?'badge-done':'badge-amber'}">${p.health}</span></div></div>
+    <div class="detail-field"><div class="df-label">Target Date</div><div class="df-val">${esc(p.target)}</div></div>`;
+  const upcoming = D.tasks.filter(t=>t.proj===p.name&&t.status!=='Done This Week').slice(0,4);
+  document.getElementById('pd-upcoming').innerHTML = upcoming.length ? upcoming.map(t=>`<div class="planner-item" onclick="openTaskPanel('${t.id}')"><div class="pi-body"><div class="pi-title">${esc(t.title)}</div><div class="pi-meta">${esc(t.due)} · ${esc(t.status)}</div></div><span class="badge badge-${t.pri.toLowerCase()}">${t.pri}</span></div>`).join('') : '<div class="empty-state">No upcoming tasks.</div>';
+  const allT = D.tasks.filter(t=>t.proj===p.name);
+  document.getElementById('pd-all-tasks').innerHTML = '<div class="card">'+(allT.length?allT.map(t=>`<div class="task-card" onclick="openTaskPanel('${t.id}')"><div class="task-meta">${esc(t.ws)} / ${esc(t.proj)}</div><div class="task-title">${esc(t.title)}</div><div class="task-tags">${t.labels.map(l=>`<span class="badge badge-gray">${esc(l)}</span>`).join('')}<span class="badge badge-${t.pri.toLowerCase()}">${t.pri}</span></div><div class="task-footer"><span>${esc(t.due)}</span><span>${esc(t.status)}</span></div></div>`).join(''):'<div class="empty-state">No tasks linked.</div>')+'</div>';
+  renderMiniBars('pd-time-bars',[2.1,3.4,2.8,2.2,1.8,0,0]);
+  renderMiniBars('pd-time-detail',[2.1,3.4,2.8,2.2,1.8,0,0]);
+  document.querySelectorAll('#page-project-detail .tab').forEach((t,i)=>{t.classList.toggle('active',i===0)});
+  document.querySelectorAll('#page-project-detail .tab-content').forEach((t,i)=>{t.classList.toggle('active',i===0)});
+}
+
+function loadTaskDetail(id) {
+  const t = D.tasks.find(x=>x.id===id);
+  if (!t) return;
+  document.getElementById('td-title').textContent = t.title;
+  document.getElementById('td-time-total').textContent = t.time;
+  document.getElementById('td-details-body').innerHTML = `
+    <div class="detail-field"><div class="df-label">Due Date</div><div class="df-val">${esc(t.due)}</div></div>
+    <div class="detail-field"><div class="df-label">Priority</div><div class="df-val"><span class="badge badge-${t.pri.toLowerCase()}">${t.pri}</span></div></div>
+    <div class="detail-field"><div class="df-label">Status</div><div class="df-val">${esc(t.status)}</div></div>
+    <div class="detail-field"><div class="df-label">Area / Project</div><div class="df-val">${esc(t.area)} / ${esc(t.proj)}</div></div>
+    <div class="detail-field"><div class="df-label">Time Tracked</div><div class="df-val" style="color:var(--purple);font-weight:600">${t.time}</div></div>`;
+  renderMiniBars('td-time-bars',[0.3,0.8,0.6,0.4,0.3,0,0]);
+}
+
+function renderBrainDump() {
+  const row = item => `
+    <div class="bd-item"><div style="width:15px;height:15px;border:1.5px solid var(--border2);border-radius:3px;flex-shrink:0;cursor:pointer"></div>
+    <div class="bd-title">${esc(item.title)}</div>
+    <div class="bd-meta"><span class="bd-type">${esc(item.type)}</span><span class="bd-date">${esc(item.date)}</span></div>
+    <div class="bd-actions"><div class="bd-act" onclick="promoteIdea('${item.id}')">→ Task</div><div class="bd-act" style="color:var(--text3)">Archive</div></div></div>`;
+  const fill=(id,arr)=>{const e=document.getElementById(id);if(e)e.innerHTML=arr.length?arr.map(row).join(''):'<div class="empty-state">Nothing here yet.</div>';};
+  fill('bd-list',D.braindump);
+  fill('bd-list-ideas',D.braindump.filter(b=>b.type==='Idea'));
+  fill('bd-list-thoughts',D.braindump.filter(b=>b.type==='Thought'));
+  fill('bd-list-someday',D.braindump.filter(b=>b.type==='Someday/Maybe'));
+  fill('bd-list-links',D.braindump.filter(b=>b.type==='Link'));
+}
+
+function inboxRow(item){
+  return `<div class="inbox-item">
+      <div class="inbox-icon" style="background:${item.bg}">${item.icon}</div>
+      <div class="inbox-body">
+        <div class="inbox-from">From: ${esc(item.from)}</div>
+        <div class="inbox-subject">${esc(item.subj)}</div>
+        <div class="inbox-actions">
+          <button class="btn btn-ghost" style="padding:3px 8px;font-size:11px" onclick="inboxConvert('${item.id}')">Convert to Task</button>
+          <button class="btn btn-ghost" style="padding:3px 8px;font-size:11px;color:var(--text3)">Archive</button>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+        <span class="inbox-time">${esc(item.time)}</span>
+        <span class="inbox-tag">${esc(item.tag)}</span>
+      </div>
+    </div>`;
+}
+function renderInbox() {
+  const fill=(id,arr)=>{const e=document.getElementById(id);if(e)e.innerHTML=arr.length?arr.map(inboxRow).join(''):'<div class="empty-state">Nothing here.</div>';};
+  fill('inbox-list',D.inbox);
+  fill('inbox-list-emails',D.inbox.filter(i=>i.icon==='✉'));
+  fill('inbox-list-appointments',D.inbox.filter(i=>i.tag==='Appointment'));
+  fill('inbox-list-ideas',D.inbox.filter(i=>i.tag==='Idea'));
+  fill('inbox-list-resources',D.inbox.filter(i=>i.tag==='Resource'));
+  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  set('inb-c-all',D.inbox.length);
+  set('inb-c-emails',D.inbox.filter(i=>i.icon==='✉').length);
+  set('inb-c-appointments',D.inbox.filter(i=>i.tag==='Appointment').length);
+  set('inb-c-ideas',D.inbox.filter(i=>i.tag==='Idea').length);
+  set('inb-c-resources',D.inbox.filter(i=>i.tag==='Resource').length);
+}
+
+let resourceCatFilter=null;
+function renderResources() {
+  const cats = ['AI / Claude','Databricks','Job Search','Home Assistant','Client','Travel','Marketing','Finance','Other'];
+  const counts = {};
+  D.resources.forEach(r=>{counts[r.cat]=(counts[r.cat]||0)+1;});
+  document.getElementById('resource-cats').innerHTML =
+    `<div style="display:flex;justify-content:space-between;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:13px;color:${resourceCatFilter?'var(--text2)':'var(--purple)'};font-weight:${resourceCatFilter?400:600};margin-bottom:1px" onclick="filterResources(null)"><span>All</span><span class="badge badge-gray">${D.resources.length}</span></div>` +
+    cats.map(c=>`
+    <div style="display:flex;justify-content:space-between;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:13px;color:${resourceCatFilter===c?'var(--purple)':'var(--text2)'};font-weight:${resourceCatFilter===c?600:400};margin-bottom:1px;background:${resourceCatFilter===c?'var(--purple-bg)':'transparent'}" onclick="filterResources('${c.replace(/'/g,"\\'")}')">
+      <span>${c}</span><span class="badge badge-gray">${counts[c]||0}</span>
+    </div>`).join('');
+  document.getElementById('res-active-cat').textContent = resourceCatFilter? '· '+resourceCatFilter : '';
+  const list = resourceCatFilter? D.resources.filter(r=>r.cat===resourceCatFilter) : D.resources;
+  document.getElementById('resource-list').innerHTML = list.length? list.map(r=>`
+    <div class="card mb-8" style="padding:12px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between">
+        <div><div style="font-size:13px;font-weight:500;margin-bottom:2px">${esc(r.title)}</div>
+        <div style="font-size:11px;color:var(--purple);margin-bottom:6px">${esc(r.url)}</div>
+        <div style="display:flex;gap:6px"><span class="badge badge-gray">${esc(r.cat)}</span>${r.proj!=='—'?`<span class="badge badge-blue">${esc(r.proj)}</span>`:''}</div></div>
+        <span style="font-size:11px;color:var(--text3);white-space:nowrap">${esc(r.date)}</span>
+      </div>
+    </div>`).join('') : '<div class="empty-state">No resources in this category.</div>';
+}
+function filterResources(c){ resourceCatFilter=c; renderResources(); }
+
+const AREA_DOT={'Client':'#3b82f6','Build Lab':'#7c3aed','Job Search':'#f59e0b','Life Admin':'#94a3b8','Home Ops':'#10b981'};
+function renderWinLog() {
+  const el=document.getElementById('win-log');
+  if(!D.wins.length){ el.innerHTML='<div class="empty-state">No wins logged yet. Run the weekly review to populate this.</div>'; return; }
+  el.innerHTML = D.wins.map(w=>{
+    const dot = AREA_DOT[w.area] ? `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${AREA_DOT[w.area]};margin-left:6px;flex-shrink:0" title="${esc(w.area)}"></span>` : '';
+    return `<div class="win-item"><span class="win-check">✓</span><span>${esc(w.win)}</span>${dot}</div>`;
+  }).join('');
+}
+
+function renderArchive() {
+  const el=document.getElementById('archive-list');
+  if(!D.archive.length){ el.innerHTML='<div class="empty-state">No archived weeks yet. The Friday weekly review appends one snapshot per week.</div>'; return; }
+  el.innerHTML = D.archive.map(a=>{
+    const top = a.topArea ? ' · '+esc(a.topArea) : '';
+    const notes = a.notes ? `<div style="font-size:11px;color:var(--text3);margin-top:4px;font-style:italic">${esc(a.notes)}</div>` : '';
+    return `
+    <div style="padding:12px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div><div style="font-size:13px;font-weight:500">${esc(a.week)}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${a.tasks} tasks · ${a.hours} · Score ${a.score}/100${top}</div></div>
+        <button class="btn btn-ghost" style="font-size:12px">View</button>
+      </div>${notes}
+    </div>`;
+  }).join('');
+}
+
+function renderMomentum(){
+  const m=liveMomentum();
+  const el=document.getElementById('rpt-momentum'); if(el) el.textContent=m;
+  const b=document.getElementById('rpt-momentum-badge'); if(!b) return;
+  let label,cls;
+  if(m>=80){label='Excellent';cls='badge-green';}
+  else if(m>=60){label='Solid';cls='badge-green';}
+  else if(m>=40){label='Building';cls='badge-amber';}
+  else {label='Needs a push';cls='badge-gray';}
+  b.className='badge '+cls+' mt-4';
+  b.textContent=label;
+}
+
+/* ---------- Command Center summary widgets ---------- */
+function renderCommandCenter(){
+  const done = D.tasks.filter(t=>t.status==='Done This Week').length;
+  const total = D.tasks.length;
+  document.getElementById('cc-done-count').textContent = done;
+  document.getElementById('cc-done-sub').textContent = 'of '+total+' tasks';
+  const areas = ['Client','Build Lab','Job Search','Life Admin','Home Ops'];
+  const badgeMap={'Client':'badge-blue','Build Lab':'badge-purple','Job Search':'badge-amber','Life Admin':'badge-gray','Home Ops':'badge-green'};
+  document.getElementById('cc-area-stats').innerHTML = areas.map(a=>{
+    const n=D.tasks.filter(t=>t.area===a).length; if(!n) return '';
+    return `<div class="stat-row"><span class="stat-label">${a}</span><span class="badge ${badgeMap[a]}">${n}</span></div>`;
+  }).join('');
+
+  document.getElementById('cc-inbox-count').textContent = D.inbox.length;
+  const tagCounts={};D.inbox.forEach(i=>{tagCounts[i.tag]=(tagCounts[i.tag]||0)+1;});
+  document.getElementById('cc-inbox-stats').innerHTML = Object.keys(tagCounts).map(k=>`<div class="stat-row"><span class="stat-label">${esc(k)}</span><span class="stat-val">${tagCounts[k]}</span></div>`).join('');
+
+  const total_time = D.tasks.reduce((s,t)=>s+t.timeNum,0);
+  document.getElementById('cc-time-total').textContent = fmtH(total_time);
+  const byProj={};D.tasks.forEach(t=>{if(t.timeNum>0)byProj[t.proj]=(byProj[t.proj]||0)+t.timeNum;});
+  const top=Object.entries(byProj).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const maxv=Math.max(...top.map(x=>x[1]),0.1);
+  document.getElementById('cc-time-bars').innerHTML = top.map(([p,v])=>`<div class="time-bar-row"><span class="tbr-label">${esc(p)}</span><div class="tbr-bar"><div class="tbr-fill" style="width:${Math.round(v/maxv*100)}%"></div></div><span class="tbr-val">${fmtH(v)}</span></div>`).join('') || '<div style="font-size:12px;color:var(--text3)">No time logged yet.</div>';
+
+  const overdue = 0;
+  const blocked = D.tasks.filter(t=>t.status==='Blocked').length;
+  const thisWeek = D.tasks.filter(t=>t.status==='This Week'||t.status==='In Progress').length;
+  document.getElementById('cc-quick-stats').innerHTML = `
+    <div class="stat-row"><span class="stat-label">Active Projects</span><span class="stat-val">${D.projects.length}</span></div>
+    <div class="stat-row"><span class="stat-label">Tasks This Week</span><span class="stat-val" style="color:var(--amber)">${thisWeek}</span></div>
+    <div class="stat-row"><span class="stat-label">Done This Week</span><span class="stat-val" style="color:var(--green)">${D.tasks.filter(t=>t.status==='Done This Week').length}</span></div>
+    <div class="stat-row"><span class="stat-label">Blocked Tasks</span><span class="stat-val" style="color:var(--red)">${blocked}</span></div>
+    <div class="stat-row"><span class="stat-label">Inbox Items</span><span class="stat-val">${D.inbox.length}</span></div>
+    <div class="stat-row"><span class="stat-label">Ideas Captured</span><span class="stat-val" style="color:var(--purple)">${D.braindump.length}</span></div>`;
+}
+
+/* ---------- Reports ---------- */
+function renderReports(){
+  const done = D.tasks.filter(t=>t.status==='Done This Week').length;
+  const hours = D.tasks.reduce((s,t)=>s+t.timeNum,0);
+  document.getElementById('rpt-k-done').textContent = done;
+  document.getElementById('rpt-k-hours').textContent = fmtH(hours);
+  document.getElementById('rpt-k-proj').textContent = D.projects.length;
+  document.getElementById('rpt-k-ideas').textContent = D.braindump.length;
+  document.getElementById('rpt-time-total').textContent = fmtH(hours);
+  document.getElementById('rpt-summary').textContent = `This week you logged ${fmtH(hours)} across ${D.tasks.length} tracked tasks and ${done} marked done, advancing ${D.projects.length} projects. ${D.braindump.length} ideas captured, ${D.inbox.length} inbox items awaiting triage.`;
+
+  const areas=['Client','Build Lab','Job Search','Life Admin','Home Ops'];
+  const areaHours={};areas.forEach(a=>areaHours[a]=0);
+  D.tasks.forEach(t=>{if(areaHours[t.area]!=null)areaHours[t.area]+=t.timeNum;});
+  const tot=Object.values(areaHours).reduce((a,b)=>a+b,0)||1;
+  document.getElementById('rpt-alloc-stats').innerHTML = areas.map(a=>`<div class="stat-row"><span class="stat-label">${a}</span><span class="stat-val">${Math.round(areaHours[a]/tot*100)}%</span></div>`).join('');
+
+  const byProj={};D.tasks.forEach(t=>{byProj[t.proj]=(byProj[t.proj]||0)+t.timeNum;});
+  const sorted=Object.entries(byProj).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]);
+  const maxp=Math.max(...sorted.map(x=>x[1]),0.1);
+  const investHtml = sorted.map(([p,v])=>`<div class="time-bar-row"><span class="tbr-label">${esc(p)}</span><div class="tbr-bar"><div class="tbr-fill" style="width:${Math.round(v/maxp*100)}%"></div></div><span class="tbr-val">${fmtH(v)}</span></div>`).join('');
+  document.getElementById('rpt-proj-invest').innerHTML = investHtml || '<div class="empty-state">No time logged.</div>';
+  document.getElementById('rpt-time-detail').innerHTML = investHtml || '<div class="empty-state">No time logged.</div>';
+
+  const statusHtml = STATUSES.map(s=>{const n=D.tasks.filter(t=>t.status===s).length;return `<div class="stat-row"><span class="stat-label">${s}</span><span class="stat-val">${n}</span></div>`;}).join('');
+  document.getElementById('rpt-tasks-status').innerHTML = statusHtml;
+  document.getElementById('rpt-tasks-area').innerHTML = areas.map(a=>{const n=D.tasks.filter(t=>t.area===a).length;return `<div class="stat-row"><span class="stat-label">${a}</span><span class="stat-val">${n}</span></div>`;}).join('');
+
+  const healthMap={'On Track':'badge-green','Needs Attention':'badge-amber','Blocked':'badge-blocked','Done':'badge-done'};
+  document.getElementById('rpt-projects-health').innerHTML = D.projects.map(p=>`<div class="time-bar-row"><span class="tbr-label">${esc(p.name)}</span><div class="tbr-bar"><div class="tbr-fill" style="width:${p.pct}%"></div></div><span class="badge ${healthMap[p.health]||'badge-gray'}" style="white-space:nowrap">${p.health}</span></div>`).join('') || '<div class="empty-state">No projects.</div>';
+
+  renderTimeAllocChart(areas.map(a=>areaHours[a]));
+}
+
+/* ---------- side panel ---------- */
+let currentTaskId=null;
+function openTaskPanel(id) {
+  const t = D.tasks.find(x=>x.id===id);
+  if (!t) return;
+  currentTaskId = id;
+  document.getElementById('panel-ws').textContent = t.ws+' / '+t.proj;
+  document.getElementById('panel-title').textContent = t.title;
+  const s = document.getElementById('panel-status');
+  s.textContent = t.status;
+  s.className = 'badge '+(t.status==='In Progress'?'badge-inprog':t.status==='Blocked'?'badge-blocked':t.status.includes('Done')?'badge-done':'badge-blue');
+  const proj = D.projects.find(p=>p.name===t.proj||p.name.includes(t.ws));
+  document.getElementById('panel-details-body').innerHTML = `
+    <div class="detail-field"><div class="df-label">Due Date</div><div class="df-val">${esc(t.due)}</div></div>
+    <div class="detail-field"><div class="df-label">Priority</div><div class="df-val"><span class="badge badge-${t.pri.toLowerCase()}">${t.pri}</span></div></div>
+    <div class="detail-field"><div class="df-label">Labels</div><div class="df-val">${t.labels.map(l=>`<span class="badge badge-gray" style="margin-right:4px">${esc(l)}</span>`).join('')||'<span style="color:var(--text3)">None</span>'}</div></div>
+    <div class="detail-field"><div class="df-label">Area</div><div class="df-val">${esc(t.area)}</div></div>
+    <div class="detail-field"><div class="df-label">Project</div><div class="df-val">${proj?`<span style="color:var(--purple);cursor:pointer" onclick="closePanel();navigate('project-detail','${proj.id}')">${esc(t.proj)}</span>`:esc(t.proj)}</div></div>
+    <div class="detail-field"><div class="df-label">Time Tracked</div><div class="df-val" style="color:var(--purple);font-weight:600">${t.time}</div></div>
+    <div class="divider"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-primary" style="font-size:12px" onclick="taskAction('done')">Mark Done</button>
+      <button class="btn btn-ghost" style="font-size:12px" onclick="taskAction('cycle')">Move Status →</button>
+      <button class="btn btn-ghost" style="font-size:12px;color:var(--red)" onclick="taskAction('blocked')">Flag Blocked</button>
+    </div>`;
+  document.querySelectorAll('#task-panel .tab').forEach((t,i)=>t.classList.toggle('active',i===0));
+  document.querySelectorAll('#task-panel .tab-content').forEach((t,i)=>t.classList.toggle('active',i===0));
+  document.getElementById('task-panel').classList.add('open');
+  document.getElementById('panel-dim').classList.add('open');
+}
+function closePanel() {
+  document.getElementById('task-panel').classList.remove('open');
+  document.getElementById('panel-dim').classList.remove('open');
+}
+
+async function taskAction(a){
+  if(!currentTaskId) return;
+  const t = D.tasks.find(x=>x.id===currentTaskId);
+  if(!t) return;
+  let status;
+  if(a==='done') status='Done This Week';
+  else if(a==='blocked') status='Blocked';
+  else { const i=STATUSES.indexOf(t.status); status=STATUSES[Math.min(i+1,STATUSES.length-1)]; }
+  const id=currentTaskId;
+  closePanel();
+  t.status=status; renderAll();   // optimistic
+  await setTaskStatus(id,status);
+}
+
+/* ============================================================
+   Writes
+   ============================================================ */
+async function setTaskStatus(id,status){
+  if(!hasCowork()) return;
+  try{
+    toast('Saving…',true);
+    await mcp('notion-update-page',{page_id:id,command:'update_properties',properties:{Status:status}});
+    await refreshKey('tasks');
+    toast('Saved ✓');
+  }catch(e){ toast('Save failed'); console.error(e); await refreshKey('tasks'); }
+}
+
+async function promoteIdea(id){
+  if(!hasCowork()) return;
+  const idea = D.braindump.find(b=>b.id===id); if(!idea) return;
+  try{
+    toast('Creating task…',true);
+    await mcp('notion-create-pages',{parent:{type:'data_source_id',data_source_id:DSID('tasks')},pages:[{properties:{Title:idea.title,Area:'Build Lab',Project:'—',Priority:'Medium',Status:'Backlog',Due:'',Time:0}}]});
+    await refreshKey('tasks');
+    toast('Task created ✓'); navigate('board');
+  }catch(e){ toast('Failed'); console.error(e); }
+}
+
+async function inboxConvert(id){
+  if(!hasCowork()) return;
+  const it = D.inbox.find(i=>i.id===id); if(!it) return;
+  try{
+    toast('Converting…',true);
+    await mcp('notion-create-pages',{parent:{type:'data_source_id',data_source_id:DSID('tasks')},pages:[{properties:{Title:it.subj,Area:'Client',Project:'—',Priority:'Medium',Status:'This Week',Due:'',Time:0}}]});
+    await refreshKey('tasks');
+    toast('Added to board ✓'); navigate('board');
+  }catch(e){ toast('Failed'); console.error(e); }
+}
+
+/* ============================================================
+   Modals
+   ============================================================ */
+const MODALS = {
+  task:{title:'Add Task',body:`<div class="form-group"><label class="form-label">Task title</label><input class="form-input" id="m-task-title" placeholder="What needs to be done?"></div><div class="form-group"><label class="form-label">Area</label><select class="form-select" id="m-task-area"><option>Client</option><option>Build Lab</option><option>Job Search</option><option>Life Admin</option><option>Home Ops</option></select></div><div class="form-group"><label class="form-label">Project</label><input class="form-input" id="m-task-proj" placeholder="Project name" list="proj-list"></div><div class="form-group"><label class="form-label">Priority</label><select class="form-select" id="m-task-pri"><option>High</option><option selected>Medium</option><option>Low</option></select></div><div class="form-group"><label class="form-label">Due (text, e.g. Jun 20 or Today)</label><input class="form-input" id="m-task-due" placeholder="Jun 20"></div>`},
+  braindump:{title:'Brain Dump',body:`<div class="form-group"><label class="form-label">What's on your mind?</label><textarea class="form-textarea" id="m-bd-text" style="min-height:120px" placeholder="Just capture it — no pressure to structure it…"></textarea></div><div class="form-group"><label class="form-label">Type</label><select class="form-select" id="m-bd-type"><option>Idea</option><option>Thought</option><option>Someday/Maybe</option><option>Link</option></select></div>`},
+  resource:{title:'Add Resource',body:`<div class="form-group"><label class="form-label">Title</label><input class="form-input" id="m-res-title" placeholder="Resource title"></div><div class="form-group"><label class="form-label">URL</label><input class="form-input" id="m-res-url" type="url" placeholder="https://…"></div><div class="form-group"><label class="form-label">Category</label><select class="form-select" id="m-res-cat"><option>AI / Claude</option><option>Databricks</option><option>Job Search</option><option>Home Assistant</option><option>Client</option><option>Travel</option><option>Marketing</option><option>Finance</option><option>Other</option></select></div>`},
+  project:{title:'New Project',body:`<div class="form-group"><label class="form-label">Project name</label><input class="form-input" id="m-proj-name" placeholder="Project name"></div><div class="form-group"><label class="form-label">Area</label><select class="form-select" id="m-proj-area"><option>Client</option><option>Build Lab</option><option>Job Search</option><option>Life Admin</option><option>Home Ops</option></select></div><div class="form-group"><label class="form-label">Workspace / Client</label><input class="form-input" id="m-proj-ws" placeholder="ETD, Bistro…"></div><div class="form-group"><label class="form-label">Target (text)</label><input class="form-input" id="m-proj-target" placeholder="Jul 15"></div>`},
+};
+let modalType=null;
+function openModal(type){
+  const m=MODALS[type]; if(!m) return;
+  modalType=type;
+  document.getElementById('modal-title').textContent=m.title;
+  document.getElementById('modal-body').innerHTML=m.body
+    + (type==='task'?`<datalist id="proj-list">${D.projects.map(p=>`<option value="${esc(p.name)}">`).join('')}</datalist>`:'');
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(){ document.getElementById('modal').classList.remove('open'); modalType=null; }
+
+async function saveModal(){
+  const g=id=>document.getElementById(id);
+  const btn=document.getElementById('modal-save');
+  if(!hasCowork()){ closeModal(); toast('Not connected to Notion'); return; }
+  try{
+    btn.disabled=true; btn.textContent='Saving…';
+    if(modalType==='task'){
+      const title=g('m-task-title').value.trim(); if(!title){ closeModal(); return; }
+      await mcp('notion-create-pages',{parent:{type:'data_source_id',data_source_id:DSID('tasks')},pages:[{properties:{Title:title,Area:g('m-task-area').value,Project:g('m-task-proj').value||'—',Priority:g('m-task-pri').value,Status:'This Week',Due:g('m-task-due').value||'',Time:0}}]});
+      closeModal(); await refreshKey('tasks'); toast('Task added ✓');
+    } else if(modalType==='braindump'){
+      const title=g('m-bd-text').value.trim(); if(!title){ closeModal(); return; }
+      await mcp('notion-create-pages',{parent:{type:'data_source_id',data_source_id:DSID('braindump')},pages:[{properties:{Title:title,Type:g('m-bd-type').value,Date:'Today'}}]});
+      closeModal(); await refreshKey('braindump'); toast('Captured ✓');
+    } else if(modalType==='resource'){
+      const title=g('m-res-title').value.trim(); if(!title){ closeModal(); return; }
+      await mcp('notion-create-pages',{parent:{type:'data_source_id',data_source_id:DSID('resources')},pages:[{properties:{Title:title,Link:g('m-res-url').value||'#',Category:g('m-res-cat').value,Project:'—',Date:'Today'}}]});
+      closeModal(); await refreshKey('resources'); toast('Resource added ✓');
+    } else if(modalType==='project'){
+      const name=g('m-proj-name').value.trim(); if(!name){ closeModal(); return; }
+      await mcp('notion-create-pages',{parent:{type:'data_source_id',data_source_id:DSID('projects')},pages:[{properties:{Name:name,Area:g('m-proj-area').value,Workspace:g('m-proj-ws').value||'',Progress:0,Health:'On Track',Time:0,Target:g('m-proj-target').value||''}}]});
+      closeModal(); await refreshKey('projects'); toast('Project created ✓');
+    } else closeModal();
+  }catch(e){ toast('Save failed'); console.error(e); }
+  finally{ btn.disabled=false; btn.textContent='Save'; }
+}
+
+/* ============================================================
+   Charts
+   ============================================================ */
+let weeklyChartObj=null, timeAllocChartObj=null, trendsChartObj=null;
+function renderWeeklyChart(){
+  const wc=document.getElementById('weeklyChart'); if(!wc||typeof Chart==='undefined') return;
+  const areas=['Client','Build Lab','Job Search','Life Admin','Home Ops'];
+  const data=areas.map(a=>D.tasks.filter(t=>t.area===a).length);
+  if(weeklyChartObj) weeklyChartObj.destroy();
+  weeklyChartObj=new Chart(wc,{type:'doughnut',data:{labels:areas,datasets:[{data:data,backgroundColor:['#3b82f6','#7c3aed','#f59e0b','#94a3b8','#10b981'],borderWidth:0}]},options:{cutout:'72%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.label+': '+c.raw}}},responsive:true,maintainAspectRatio:true}});
+}
+function renderTimeAllocChart(vals){
+  const tc=document.getElementById('timeAllocChart'); if(!tc||typeof Chart==='undefined') return;
+  if(timeAllocChartObj) timeAllocChartObj.destroy();
+  timeAllocChartObj=new Chart(tc,{type:'doughnut',data:{labels:['Client','Build Lab','Job Search','Life Admin','Home Ops'],datasets:[{data:vals,backgroundColor:['#7c3aed','#3b82f6','#10b981','#f59e0b','#94a3b8'],borderWidth:0}]},options:{cutout:'70%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.label+': '+c.raw+'h'}}},responsive:true,maintainAspectRatio:true}});
+}
+function renderTrendsChart(){
+  const el=document.getElementById('trendsChart'); if(!el||typeof Chart==='undefined') return;
+  const weeks=[...D.archive].reverse();
+  const labels=weeks.map(w=>w.week.replace('Week of ','').replace(', 2026','')).concat(['This Week']);
+  const scores=weeks.map(w=>w.score).concat([liveMomentum()]);
+  const hours=weeks.map(w=>parseFloat(w.hours)).concat([D.tasks.reduce((s,t)=>s+t.timeNum,0)]);
+  if(trendsChartObj) trendsChartObj.destroy();
+  trendsChartObj=new Chart(el,{data:{labels,datasets:[{type:'line',label:'Momentum',data:scores,borderColor:'#7c3aed',backgroundColor:'rgba(124,58,237,.1)',yAxisID:'y',tension:.3,fill:true},{type:'bar',label:'Hours',data:hours,backgroundColor:'#a78bfa',yAxisID:'y1'}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{position:'left',min:0,max:100,title:{display:true,text:'Momentum'}},y1:{position:'right',grid:{drawOnChartArea:false},title:{display:true,text:'Hours'}}},plugins:{legend:{position:'bottom'}}}});
+}
+
+/* ============================================================
+   Init
+   ============================================================ */
+function renderAll(){
+  renderSidebarBars(); renderTop3(); renderBoardPreview(); renderBoard();
+  renderDailyPlanner(); renderWeeklyPlanner(); renderProjects();
+  renderBrainDump(); renderInbox(); renderResources(); renderWinLog(); renderArchive();
+  renderCommandCenter(); renderReports(); renderMomentum();
+  renderMiniBars('td-time-bars',[0.3,0.8,0.6,0.4,0.3,0,0]);
+  renderWeeklyChart(); renderTrendsChart();
+}
+
+async function reloadData(){
+  if(!hasCowork()){ toast('Not connected to Notion'); return; }
+  toast('Refreshing…',true);
+  try{ await loadAll(); renderAll(); toast('Up to date ✓'); }
+  catch(e){ toast('Refresh failed'); console.error(e); }
+}
+
+async function init(){
+  renderAll();
+  if(hasCowork()){
+    toast('Loading from Notion…',true);
+    try{ await loadAll(); renderAll(); hideToast(); }
+    catch(e){ toast('Could not load Notion data'); console.error(e); }
+  } else {
+    toast('Demo mode — open as a Cowork artifact for live data');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
