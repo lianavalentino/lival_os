@@ -686,9 +686,28 @@ Field mapping:
 | Selected text | `note` | — |
 | Typed input | `idea` | — |
 
-No middleware, no polling, no monthly bill, roughly twenty minutes to set up. Everything
-enters through the one endpoint into `inbox_items`; triage happens in Inbox; links promote
-into Brain → Saved.
+No middleware, no polling, no monthly bill. Everything enters through the one endpoint into
+`inbox_items`; triage happens in Inbox; links promote into Brain → Saved.
+
+> **Blocked as of 2026-08-03 — on iOS, not on this design.** The Shortcut was built correctly
+> and every run fails with `The network connection was lost`
+> (`NSURLErrorNetworkConnectionLost`, -1005), with **nothing reaching the server** — confirmed
+> by querying `inbox_items` after each attempt.
+>
+> Ruled out: the endpoint (three curl POSTs, all 201, sub-second), cold start, the bearer
+> header, the JSON body, and the `Ask for Input` variable — a literal title fails identically.
+> Safari on the same phone gets a clean 405 from the same URL, so the device reaches the host.
+>
+> Prime suspect is **HTTP/3**: Supabase Edge Functions negotiate QUIC; Safari falls back to
+> HTTP/2 and Shortcuts does not. If confirmed, the fix is a thin Vercel route in front of
+> `ingest-quick-capture` rather than fighting iOS.
+>
+> This section used to claim "roughly twenty minutes to set up." That estimate was wrong, and
+> the reason is environmental rather than anything in the design. Board card S-2 carries the
+> ordered next steps.
+>
+> Not blocking daily use: the app is live on the phone, and the sidebar's Quick Capture does
+> the same job in two taps.
 
 ### 11.3 Producer: Notion — deferred, one database
 
