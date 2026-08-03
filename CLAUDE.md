@@ -33,10 +33,14 @@ them. Moved here from `~/Documents/LianaOS` on the same date.
 - **Inbound, next:** an Apple Shortcut POSTing to `ingest-quick-capture` — home screen, Siri,
   and share sheet. This is the primary capture path. See `PRD.md` §11.2.
 - **Inbound, deferred:** Notion as a phone-first **capture source** read *from*, never a
-  mirror written *to*. Transport would be Supabase `pg_cron` + `pg_net` calling an edge
-  function. **n8n is rejected** (decided 2026-08-02) — the design doc at
-  `docs/superpowers/specs/2026-06-24-n8n-gmail-capture-design.md` is historical and its
-  transport choice no longer applies. See `PRD.md` §11.3.
+  mirror written *to*. Transport is Supabase `pg_cron` + `pg_net` calling an edge function.
+  **n8n is rejected** (decided 2026-08-02). Current design:
+  `docs/superpowers/specs/2026-08-02-notion-capture-poller-design.md`. The older
+  `2026-06-24-n8n-gmail-capture-design.md` is historical — its transport no longer applies,
+  though its write-side change to `ingest-quick-capture` was built and is live. Build is
+  gated on two weeks of Shortcut-only capture; see `PRD.md` §11.3.
+  **Before building it, read §5 of the design doc** — `inbox_items` has no idempotency key,
+  so a poller written against the endpoint as it stands today will duplicate Inbox rows.
 - **Not connected to:** `personal/kanban/` (a separate scaffold, never built) or any
   `TASKS.md` roll-up. If you find a doc claiming otherwise, it predates 2026-08-02.
 - **Secrets:** `LIVAL_INGEST_SECRET` lives in `~/.claude/settings.json` env (for the hooks) and

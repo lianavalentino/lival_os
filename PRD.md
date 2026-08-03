@@ -705,6 +705,16 @@ a job that Postgres can schedule natively.
 Revisit after two weeks of Shortcut-only capture. If the Shortcut covers it, this never gets
 built.
 
+Full design: `docs/superpowers/specs/2026-08-02-notion-capture-poller-design.md`. Two things
+in it are worth knowing before the review, because they change what "four hours" buys:
+
+- `inbox_items` has **no idempotency key**, so a poller duplicates Inbox rows on any retry.
+  The fix is an `external_ref` column and partial unique index mirroring migration 003, plus
+  upsert support in `ingest-quick-capture`. That closes a real hole in the endpoint whether
+  or not the poller ships.
+- Routing is a Notion `Area` select mapped to `suggested_area_id`, **not** a Claude call. One
+  tap beats a guess, and it keeps `ANTHROPIC_API_KEY` out of Supabase.
+
 ### 11.4 Retired producers
 
 The four other Notion databases (Projects, Brain Dump, Inbox, Resources) are prototype
@@ -940,7 +950,9 @@ browser writes the old areas back on the next login.
 - **Google Calendar integration.** The derived Weekly Calendar answers "what did I plan to
   work on." A calendar integration answers "what did I commit to other people" — a different
   question. Revisit after the derived version is in use.
-- **Notion poller.** Revisit after two weeks of Shortcut-only capture (§11.3).
+- **Notion poller.** Revisit after two weeks of Shortcut-only capture (§11.3). Designed and
+  costed at ~4h in `docs/superpowers/specs/2026-08-02-notion-capture-poller-design.md`; the
+  review is a go/no-go, not a design session.
 - **Reports charts.** Revisit once the weekly review is actually feeding data (§7.10).
 - **Credential rotation.** Plaintext GitHub PAT and `LIVAL_INGEST_SECRET` in
   `~/.claude/settings.json` need a keychain-backed source. Tracked, out of scope here.
@@ -979,6 +991,7 @@ Not building, with the reason:
 | `docs/ingestion/README.md` | Endpoint contracts, producer setup. |
 | `docs/decisions/` | Dated decision records with reasoning. |
 | `docs/superpowers/kanban.html` | Generated from §17. |
+| `docs/superpowers/specs/2026-08-02-notion-capture-poller-design.md` | The Notion poller design. Current, not historical — build gated on §11.3. |
 
 ### Reference — consult, do not duplicate
 
@@ -990,11 +1003,11 @@ Not building, with the reason:
 
 | Path | What |
 |---|---|
-| `docs/superpowers/specs/` (6) | Design docs, dated. A decision log — that *is* their value. |
+| `docs/superpowers/specs/` — the 6 carrying HISTORICAL banners | Design docs, dated. A decision log — that *is* their value. The 2026-08-02 poller design above is **not** one of them; do not banner it. |
 | `docs/superpowers/plans/` (7) | Implementation plans, dated. |
 | `docs/archive/prototype-2026-06/` | The retired `TASKS.md` → Notion → HTML pipeline, plus PRD v1 and the June prototype. |
 | `docs/archive/superseded-nextjs/` | The rejected Next.js/Tailwind/Vercel/Sheets guidance, including the former `docs/CLAUDE.md`, which carried the wrong secret name. |
-| `LIVAL_OS_Codex_PRD_v1.md` | Superseded by this document. To be archived. |
+| `docs/archive/superseded-prds/LIVAL_OS_Codex_PRD_v1.md` | Superseded by this document. Archived 2026-08-02; that folder's README names its three actively-wrong sections. |
 
 ---
 

@@ -446,7 +446,8 @@
                 name: 'After the Ship Line',
                 status: 'todo',
                 docs: [
-                    { label: 'PRD §17.3', href: '../../PRD.md' }
+                    { label: 'PRD §17.3', href: '../../PRD.md' },
+                    { label: 'Notion poller design', href: 'specs/2026-08-02-notion-capture-poller-design.md' }
                 ],
                 tasks: [
                     { id: 'N-1', title: 'Board drag-and-drop', status: 'todo', notes: '~4h. No DnD exists today. Gap Audit called it P0, the Codex PRD called it deferred — P0 wins. Shortest path between doing a thing and recording it.' },
@@ -454,9 +455,11 @@
                     { id: 'N-3', title: 'Weekly Calendar — derive from own data', status: 'todo', notes: '~5h. Currently hardcoded fake text (index < 5 ? "N focus block" : "Light"). Derive from task due dates + daily_plans, colored by area. Not Google Calendar — that answers a different question.' },
                     { id: 'N-4', title: 'Project Detail tabs', status: 'todo', notes: '~4h. Build Overview + Tasks + Time. Timeline is cut (needs a hand-maintained milestones table, violates R1) and Notes is cut (duplicates Brain). Resources and Activity are cheap later adds.' },
                     { id: 'N-5', title: 'automation_runs logging', status: 'todo', notes: '~2h. The table exists and is unwired, which is exactly why lival-sync-daily could fail silently for six weeks. A silent automation failure is a P1 defect per PRD §14.2.' },
-                    { id: 'N-6', title: 'Reports charts', status: 'todo', notes: 'Deferred, not scheduled. Revisit only once the weekly review is actually feeding data. Recharts is ~6h and answers nothing the text panels do not.' }
+                    { id: 'N-6', title: 'Reports charts', status: 'todo', notes: 'Deferred, not scheduled. Revisit only once the weekly review is actually feeding data. Recharts is ~6h and answers nothing the text panels do not.' },
+                    { id: 'N-7', title: 'inbox_items external_ref + upsert', status: 'todo', notes: '~1h. inbox_items has no idempotency key, so any repeating producer duplicates Inbox rows. Add the column + partial unique index (mirror migration 003) and upsert in ingest-quick-capture. Worth doing on its own — it is a real hole in a live endpoint, not just poller prep. Blocks N-8. See specs/2026-08-02-notion-capture-poller-design.md §5.' },
+                    { id: 'N-8', title: 'Notion capture poller', status: 'todo', notes: '~4h, GATED. Do not start until two weeks of Shortcut-only capture say the Shortcut is not enough — if it is, this never gets built. pg_cron + pg_net → poll-notion-capture edge fn. No n8n, no Claude call (an Area select beats a guess). Needs N-7 first. Full design: specs/2026-08-02-notion-capture-poller-design.md.' }
                 ],
-                summary: 'Ships after daily use has started, not before.'
+                summary: 'Ships after daily use has started, not before. N-8 may never ship, by design.'
             }
         ];
 
