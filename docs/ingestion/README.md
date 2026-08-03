@@ -77,8 +77,17 @@ constraint, so re-posting inserts a new row.
 
 ## Producer: Claude Code time tracking (hook)
 
-Two hooks: `SessionStart` records the start time keyed by session id;
-`SessionEnd` computes elapsed minutes and posts a time entry. Add to
+Canonical scripts live in [`scripts/hooks/`](../../scripts/hooks/) — that is the only
+copy to edit. `~/.claude/hooks/*.sh` are installed copies (copies, not symlinks: this
+repo has moved once already and a symlink would have broken the hooks silently):
+
+```bash
+bash scripts/hooks/install.sh
+```
+
+Two hooks: `SessionStart` records the start time keyed by session id under
+`/tmp/lival-sessions/<session-id>`; `SessionEnd` computes elapsed minutes and posts a
+time entry. `install.sh` handles `chmod +x`. Register them in
 `~/.claude/settings.json` (adjust paths):
 
 ```json
@@ -94,42 +103,53 @@ Two hooks: `SessionStart` records the start time keyed by session id;
 }
 ```
 
-`~/.claude/hooks/lival-session-start.sh`:
+Export `LIVAL_INGEST_SECRET` so the hooks inherit it (see the caveat below).
+`external_ref=$sid` makes re-runs idempotent.
+
+### When the POST fails
+
+The entry is **not** dropped. On anything other than a 2xx — endpoint down, no network,
+wrong secret, timeout — `lival-session-end.sh` writes the payload to
+`~/.claude/lival-spool/<session-id>.json` and still exits 0, so session teardown is never
+blocked or noisy. The start file is removed only once the payload is either accepted or
+safely spooled.
+
+The spool lives under `~/.claude/`, not `/tmp`: `/tmp` is cleared on reboot and by
+`periodic daily`, and a spool whose job is surviving a multi-day outage cannot live there.
+
+Drain it once the endpoint is healthy:
+
 ```bash
-#!/usr/bin/env bash
-input=$(cat)
-sid=$(printf '%s' "$input" | /usr/bin/python3 -c 'import sys,json;print(json.load(sys.stdin).get("session_id","unknown"))')
-mkdir -p /tmp/lival-sessions
-date +%s > "/tmp/lival-sessions/$sid"
+bash scripts/hooks/lival-replay-spool.sh
 ```
 
-`~/.claude/hooks/lival-session-end.sh`:
+It POSTs each spooled payload, deletes the file on 2xx, keeps it otherwise, and exits
+non-zero if anything remains. Safe to re-run as often as you like — every spooled payload
+carries `external_ref = <session-id>` and `ingest-time-entry` dedupes on it.
+
+### Env vars
+
+| Var | Purpose |
+|---|---|
+| `LIVAL_INGEST_SECRET` | required; bearer token |
+| `LIVAL_INGEST_URL` | base URL override, default `https://mfcdzgkhmzppfctdzhwy.supabase.co/functions/v1` |
+| `LIVAL_SPOOL_DIR` | spool override, default `~/.claude/lival-spool` |
+| `LIVAL_SESSION_DIR` | start-file override, default `/tmp/lival-sessions` |
+
+The last two exist for the tests; production leaves them unset.
+
 ```bash
-#!/usr/bin/env bash
-input=$(cat)
-sid=$(printf '%s' "$input" | /usr/bin/python3 -c 'import sys,json;print(json.load(sys.stdin).get("session_id","unknown"))')
-startfile="/tmp/lival-sessions/$sid"
-[ -f "$startfile" ] || exit 0
-start_epoch=$(cat "$startfile")
-end_epoch=$(date +%s)
-minutes=$(( (end_epoch - start_epoch) / 60 ))
-[ "$minutes" -lt 1 ] && exit 0
-started_iso=$(date -u -r "$start_epoch" +%Y-%m-%dT%H:%M:%SZ)
-curl -s -X POST \
-  "https://mfcdzgkhmzppfctdzhwy.supabase.co/functions/v1/ingest-time-entry" \
-  -H "Authorization: Bearer $LIVAL_INGEST_SECRET" \
-  -H "Content-Type: application/json" \
-  -d "{\"started_at\":\"$started_iso\",\"duration_minutes\":$minutes,\"source\":\"claude_code\",\"external_ref\":\"$sid\"}" >/dev/null
-rm -f "$startfile"
+bash scripts/hooks/test-session-end.sh
 ```
 
-Make both executable (`chmod +x`) and export `LIVAL_INGEST_SECRET` in your shell
-profile so the hooks inherit it. `external_ref=$sid` makes re-runs idempotent.
+Covers 2xx, 4xx, 5xx, unreachable host, sub-minute sessions, missing start file, and
+replay in both directions, against a local stub server.
 
 > **Secret inheritance caveat:** a `~/.zshrc` export only reaches hooks when
 > Claude Code is launched from a terminal. GUI launches (VS Code extension,
 > desktop app) do **not** source `~/.zshrc`, so the hook sees an empty secret
-> and the POST silently 401s. For reliable inheritance across all launch
+> and the POST 401s — recoverable now that failures spool, but every affected
+> session has to be replayed by hand. For reliable inheritance across all launch
 > contexts, also add the secret to `~/.claude/settings.json` under `env`:
 >
 > ```json
