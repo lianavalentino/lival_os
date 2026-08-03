@@ -732,12 +732,16 @@ direction into the wrong store.
 Two scheduled jobs were found still live on disk on 2026-08-02, both pointing at the retired
 architecture.
 
-### 12.1 `lival-sync-daily` (8am) — DELETE
+### 12.1 `lival-sync-daily` (8am) — DELETED 2026-08-02
 
-Runs `~/Developer/.claude/skills/lival-sync/scripts/rollup.py` and scans
-`command-center-work-os/TASKS.md`. Both were deleted. It syncs files → Notion: wrong
-direction, wrong store, missing script. **It has been failing every morning since.** Nothing
-to salvage.
+Ran `~/Developer/.claude/skills/lival-sync/scripts/rollup.py` and scanned
+`command-center-work-os/TASKS.md`. Both were deleted. It synced files → Notion: wrong
+direction, wrong store, missing script. It failed every morning for six weeks. Nothing to
+salvage.
+
+Removed from `~/Claude/Scheduled/lival-sync-daily/`. Its write target was the prototype
+`LIVAL Tasks` Notion data source `495dc8ff-f3c2-43cc-a13e-c05a74d06de4` — one of the seven
+mirrors in §11.4, and the only one whose id is now recorded anywhere.
 
 ### 12.2 `lival-weekly-review-friday` (Fri 5pm) — PORT to Supabase
 

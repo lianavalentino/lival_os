@@ -254,6 +254,12 @@ what happened to `lival-sync-daily` (PRD §12).
 Once this ships **and one week of captures has landed clean**, the seven mirrors from
 PRD §11.4 have no remaining job.
 
+Only one id is currently recorded: `LIVAL Tasks`, data source
+`495dc8ff-f3c2-43cc-a13e-c05a74d06de4`, recovered from the `lival-sync-daily` task
+definition before it was deleted on 2026-08-02. The other six were never written down
+and are not reachable from the connected Notion integration — find them by hand in the
+Notion UI when the time comes.
+
 They hold prototype data and deletion is irreversible. **Delete them by hand, from the
 Notion UI, after exporting.** Do not script it and do not have an agent do it — there
 is no recovery path and no upside to automating a one-time destructive action on a
