@@ -1,6 +1,79 @@
-import { Database, LockKeyhole, RotateCcw, Sparkles } from "lucide-react";
+import { FormEvent, useState } from "react";
+import { Database, KeyRound, LockKeyhole, RotateCcw, Sparkles } from "lucide-react";
 import type { AppData } from "../../types";
+import { supabase } from "../../lib/supabase";
+import { validateNewPassword } from "../../lib/password";
 import { ListItems, PanelHeader, StatusPill } from "../ui/primitives";
+
+/**
+ * Setting a password from inside the app matters more than it looks: without it,
+ * the only route back into a locked-out account is an emailed magic link, and
+ * Supabase's built-in SMTP caps those at a couple per hour. On 2026-08-03 that
+ * combination locked the account out for over an hour.
+ */
+function PasswordPanel() {
+  const [password, setPassword] = useState("");
+  const [confirmation, setConfirmation] = useState("");
+  const [status, setStatus] = useState<{ tone: "ok" | "error"; message: string } | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const submit = async (event: FormEvent) => {
+    event.preventDefault();
+    const problem = validateNewPassword(password, confirmation);
+    if (problem) {
+      setStatus({ tone: "error", message: problem });
+      return;
+    }
+    if (!supabase) return;
+
+    setIsSubmitting(true);
+    setStatus(null);
+    const { error } = await supabase.auth.updateUser({ password });
+    setIsSubmitting(false);
+
+    if (error) {
+      setStatus({ tone: "error", message: error.message });
+      return;
+    }
+    setPassword("");
+    setConfirmation("");
+    setStatus({ tone: "ok", message: "Password updated. You can now sign in without a magic link." });
+  };
+
+  return (
+    <section className="panel">
+      <PanelHeader title="Password" icon={KeyRound} />
+      <p>
+        Set a password so you are never dependent on an emailed link to get back in.
+      </p>
+      <form className="password-form" onSubmit={submit}>
+        <label>
+          New password
+          <input
+            autoComplete="new-password"
+            onChange={(event) => setPassword(event.target.value)}
+            type="password"
+            value={password}
+          />
+        </label>
+        <label>
+          Confirm
+          <input
+            autoComplete="new-password"
+            onChange={(event) => setConfirmation(event.target.value)}
+            type="password"
+            value={confirmation}
+          />
+        </label>
+        {status && <p className={`form-note ${status.tone}`}>{status.message}</p>}
+        <button className="secondary-action" disabled={isSubmitting} type="submit">
+          <KeyRound size={16} />
+          {isSubmitting ? "Saving…" : "Set password"}
+        </button>
+      </form>
+    </section>
+  );
+}
 
 export function SettingsView({
   data,
@@ -36,6 +109,7 @@ export function SettingsView({
           </button>
         )}
       </section>
+      {mode === "supabase" && <PasswordPanel />}
       <section className="panel">
         <PanelHeader title="Persistence" icon={Database} />
         <ListItems
