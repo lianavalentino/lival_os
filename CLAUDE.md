@@ -1,4 +1,8 @@
-# LIVAL OS — CLAUDE.md
+# LIVAL OS — agent instructions
+
+> **`CLAUDE.md` and `AGENTS.md` are the same file.** `AGENTS.md` is a symlink to this one.
+> Both Claude Code and Codex work in this repo; edit either path, the other follows. Do not
+> replace the symlink with a copy — two files means two truths within a week.
 
 **Canonical scope lives in [`PRD.md`](PRD.md).** This file covers build state, environment,
 and gotchas — the fast-moving half. `PRD.md` covers product, views, data model, and open
@@ -24,10 +28,15 @@ them. Moved here from `~/Documents/LianaOS` on the same date.
   POST elapsed session time to the `ingest-time-entry` edge function on every session end.
   These are global hooks in `~/.claude/settings.json`, not repo-local — they survive
   independently of this directory and are keyed to the Supabase URL, not to a filesystem path.
-- **Inbound, planned:** Notion becomes a phone-first **capture source** feeding
-  `ingest-quick-capture` — not a mirror, and not a source of truth. Gmail (via n8n) and Siri
-  Shortcuts are peers of it. See `docs/superpowers/specs/2026-06-24-n8n-gmail-capture-design.md`;
-  the Notion variant swaps the trigger node and keeps everything downstream.
+  **Claude Code only.** `time_entries.source` accepts `codex`, but no Codex-side hook exists —
+  Codex sessions in this repo are currently untracked. Build one or log manually.
+- **Inbound, next:** an Apple Shortcut POSTing to `ingest-quick-capture` — home screen, Siri,
+  and share sheet. This is the primary capture path. See `PRD.md` §11.2.
+- **Inbound, deferred:** Notion as a phone-first **capture source** read *from*, never a
+  mirror written *to*. Transport would be Supabase `pg_cron` + `pg_net` calling an edge
+  function. **n8n is rejected** (decided 2026-08-02) — the design doc at
+  `docs/superpowers/specs/2026-06-24-n8n-gmail-capture-design.md` is historical and its
+  transport choice no longer applies. See `PRD.md` §11.3.
 - **Not connected to:** `personal/kanban/` (a separate scaffold, never built) or any
   `TASKS.md` roll-up. If you find a doc claiming otherwise, it predates 2026-08-02.
 - **Secrets:** `LIVAL_INGEST_SECRET` lives in `~/.claude/settings.json` env (for the hooks) and
