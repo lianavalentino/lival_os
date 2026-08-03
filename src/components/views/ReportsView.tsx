@@ -1,6 +1,7 @@
 import { BarChart3, CheckCircle2, Clock3, FolderKanban, Target } from "lucide-react";
 import type { AppData } from "../../types";
 import { dashboardMetrics, minutesToHours, projectTime } from "../../lib/metrics";
+import { weeklyReview } from "../../lib/weekly-review";
 import { ListItems, Metric, PanelHeader } from "../ui/primitives";
 
 export function ReportsView({
@@ -11,23 +12,30 @@ export function ReportsView({
   metrics: ReturnType<typeof dashboardMetrics>;
 }) {
   const latest = data.weeklySnapshots[0];
+  // Computed live rather than read from weekly_snapshots. The Friday job that
+  // fills that table still writes to Notion (PRD §12.2), so the stored score has
+  // been a seeded 78 since June. This shows the real number now.
+  const review = weeklyReview(data, new Date());
+
   return (
     <div className="content-grid">
       <section className="panel span-2">
         <PanelHeader title="Weekly Summary" icon={BarChart3} />
         <p>{latest?.summary}</p>
         <div className="detail-meta">
-          <Metric label="Tasks completed" value={metrics.completedCount} tone="green" />
-          <Metric label="Hours worked" value={minutesToHours(metrics.totalMinutes)} tone="blue" />
-          <Metric label="Projects advanced" value={latest?.projectsAdvanced || 0} tone="purple" />
+          <Metric label="Tasks closed" value={review.tasksClosed} tone="green" />
+          <Metric label="Hours worked" value={minutesToHours(review.minutesTracked)} tone="blue" />
+          <Metric label="Top area" value={review.topArea || "—"} tone="purple" />
           <Metric label="Ideas captured" value={metrics.ideasCaptured} tone="green" />
         </div>
       </section>
       <section className="panel">
         <PanelHeader title="Weekly Health" icon={Target} />
         <div className="weekly-task-total">
-          <strong>{latest?.momentumScore || 0}</strong>
-          <span>Overall score</span>
+          <strong>{review.momentumScore}</strong>
+          <span>
+            Momentum — {review.tasksClosed} of {review.tasksPlanned} planned
+          </span>
         </div>
       </section>
       <section className="panel">
