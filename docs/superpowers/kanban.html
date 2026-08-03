@@ -296,7 +296,7 @@
     <div class="container">
         <header>
             <h1>🦸 LIVAL OS — Superpowers Kanban</h1>
-            <p class="subtitle">Track Phase 0–4 alignment and implementation progress</p>
+            <p class="subtitle">Phases 0–3 built the app. Phase 4 consolidated the docs. Phases 5–6 are the open work, generated from <a href="../../PRD.md" target="_blank" rel="noopener">PRD.md</a> §17 — that document is the source, this board is the view.</p>
         </header>
 
         <div id="kanban-board"></div>
@@ -382,7 +382,7 @@
             {
                 id: 3,
                 name: 'Ingestion Endpoints (Edge Functions)',
-                status: 'progress',
+                status: 'done',
                 docs: [
                     { label: 'Spec', href: 'specs/2026-06-17-phase3-ingestion-edge-functions-design.md' },
                     { label: 'Plan', href: 'plans/2026-06-17-phase3-ingestion-edge-functions.md' },
@@ -405,21 +405,58 @@
             },
             {
                 id: 4,
-                name: 'Deployment & Polish',
-                status: 'todo',
-                tasks: [
-                    { id: '4-1', title: 'Update .env.example', status: 'todo', notes: 'Document all required env vars (no real values).' },
-                    { id: '4-2', title: 'Supabase auth config', status: 'todo', notes: 'Verify email/password provider is enabled.' },
-                    { id: '4-3', title: 'Vercel project setup', status: 'todo', notes: 'Connect GitHub repo, configure deployment.' },
-                    { id: '4-4', title: 'Environment variables', status: 'todo', notes: 'Set VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, etc. on Vercel.' },
-                    { id: '4-5', title: 'Build verification', status: 'todo', notes: 'npm run build produces dist/.' },
-                    { id: '4-6', title: 'RLS smoke test', status: 'todo', notes: 'Verify single user cannot see other user data.' },
-                    { id: '4-7', title: 'Auth smoke test', status: 'todo', notes: 'Create account, log in, log out.' },
-                    { id: '4-8', title: 'Ingestion smoke test', status: 'todo', notes: 'Call edge functions from curl. Verify rows appear.' },
-                    { id: '4-9', title: 'Deploy', status: 'todo', notes: 'Push to Vercel. Visit app.' },
-                    { id: '4-10', title: 'Production docs', status: 'todo', notes: 'Update README.md with deployment instructions.' }
+                name: 'Consolidation & Scope Reset (Aug 2026)',
+                status: 'done',
+                docs: [
+                    { label: 'Decision record', href: '../decisions/2026-08-02-scope-reset.md' },
+                    { label: 'PRD', href: '../../PRD.md' }
                 ],
-                summary: 'Live, working, user-ready app.'
+                tasks: [
+                    { id: 'C-A', title: 'Archive the prototype into git', status: 'done', notes: 'command-center-work-os had no git, no sync, no backup. Copied verbatim into docs/archive/prototype-2026-06/ so every later deletion is recoverable.' },
+                    { id: 'C-B', title: 'Delete the external prototype', status: 'done', notes: 'Removed command-center-work-os, 4 root PRDs, lival-os.html, and both copies of the lival-sync/lival-scope skills. They synced the wrong direction into the wrong store.' },
+                    { id: 'C-C', title: 'Move the repo to ~/Developer/personal/lival-os', status: 'done', notes: 'From ~/Documents/LianaOS, per workspace convention. Session hooks verified path-independent and survived unchanged.' },
+                    { id: 'C-D', title: 'Scope reset — 9 decisions', status: 'done', notes: 'Grilling session. Daily ADHD tool not portfolio; prototype sidebar; Brain merge; Vercel; 5 areas; Shortcut capture; 6 gaps triaged. docs/decisions/2026-08-02-scope-reset.md (3910643).' },
+                    { id: 'C-E', title: 'Write the canonical PRD', status: 'done', notes: 'PRD.md at repo root, 1022 lines. Codex PRD archived; 6 specs + 7 plans banner-marked HISTORICAL; Frontend Artifact Spec kept as reference (f800fc3).' },
+                    { id: 'C-F', title: 'Rebuild this board from PRD §17', status: 'done', notes: 'Fixed Phase 3 showing PROGRESS over 11/11 done. Replaced the stale "Deployment & Polish" phase with the real ship line.' },
+                    { id: 'C-G', title: 'Add AGENTS.md alongside CLAUDE.md', status: 'done', notes: 'Symlink, not a copy. Both Claude Code and Codex work in this repo (0a40f32).' }
+                ],
+                summary: 'Three things called LIVAL OS became one. One PRD, one board, one system of record.'
+            },
+            {
+                id: 5,
+                name: 'Ship Line — stop building, start using',
+                status: 'todo',
+                docs: [
+                    { label: 'PRD §17.2', href: '../../PRD.md' }
+                ],
+                tasks: [
+                    { id: 'S-1', title: 'Deploy to Vercel', status: 'todo', notes: '~2h. Connect the repo, set VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY (legacy JWT format, not sb_publishable_), verify auth and mobile load. Hobby terms are non-commercial — fine for personal use.' },
+                    { id: 'S-2', title: 'Build the Apple Shortcut', status: 'todo', notes: '~30m. Home screen + Siri + share sheet. If-block on Shortcut Input, falling back to Ask for Input. POSTs to ingest-quick-capture. Bearer secret lives in the Shortcut — do not export or share it.' },
+                    { id: 'S-3', title: 'Migration 004 — reset areas', status: 'todo', notes: '~1h. Insert the 5 areas (Consulting, VI, Personal Projects, Job Search, Life Admin). Remap Build Lab → Personal Projects, Home Ops → Life Admin. Drop Learning. Must land with S-4.' },
+                    { id: 'S-4', title: 'Strip the client-side seed bootstrap', status: 'todo', notes: '~1h. Remove bootstrapSeedData() and deleteDuplicateSeedRows() from src/lib/repository.ts. Without this, migrating areas then logging in writes the old areas straight back. Closes Gap Audit Risk #3.' },
+                    { id: 'S-5', title: 'Port the Friday weekly review to Supabase', status: 'todo', notes: '~2h. ~/Claude/Scheduled/lival-weekly-review-friday. Keeps its schedule and math; swaps Notion for Supabase. Replace the hardcoded area list with a query. This is what makes Reports, Archive, and Momentum Score real — the feature is unfed, not unbuilt.' },
+                    { id: 'S-6', title: 'Delete lival-sync-daily', status: 'todo', notes: '~5m. Its rollup.py and TASKS.md were both deleted in Phase B. It has been failing every 8am since. Nothing to salvage.' },
+                    { id: 'S-7', title: 'Recompose the sidebar', status: 'todo', notes: '~3h. Grouped nav (Now / Work / Review), Quick Capture inline in the sidebar, "This Week\'s Time" card pinned bottom. Taken from docs/archive/prototype-2026-06/lival-os.html — palettes already match, the difference is structural.' },
+                    { id: 'S-8', title: 'Merge Brain Dump + Resources into Brain', status: 'todo', notes: '~2h. One view, icon 💡, tabs All / Ideas / Someday / Saved. Saved reads resources, the rest read brain_dumps. Both tables stay — the lifecycles are opposite. Already the same TabbedList component.' }
+                ],
+                summary: 'Deployed + Shortcut + real Command Center + Friday review filling Reports. ~3 days.'
+            },
+            {
+                id: 6,
+                name: 'After the Ship Line',
+                status: 'todo',
+                docs: [
+                    { label: 'PRD §17.3', href: '../../PRD.md' }
+                ],
+                tasks: [
+                    { id: 'N-1', title: 'Board drag-and-drop', status: 'todo', notes: '~4h. No DnD exists today. Gap Audit called it P0, the Codex PRD called it deferred — P0 wins. Shortest path between doing a thing and recording it.' },
+                    { id: 'N-2', title: 'Task Detail time widget', status: 'todo', notes: '~2h. Total time, weekly bar chart, "Auto-tracked via Claude Code" note. Task Detail shows Estimate only today. This is the payoff for every session hook running since June.' },
+                    { id: 'N-3', title: 'Weekly Calendar — derive from own data', status: 'todo', notes: '~5h. Currently hardcoded fake text (index < 5 ? "N focus block" : "Light"). Derive from task due dates + daily_plans, colored by area. Not Google Calendar — that answers a different question.' },
+                    { id: 'N-4', title: 'Project Detail tabs', status: 'todo', notes: '~4h. Build Overview + Tasks + Time. Timeline is cut (needs a hand-maintained milestones table, violates R1) and Notes is cut (duplicates Brain). Resources and Activity are cheap later adds.' },
+                    { id: 'N-5', title: 'automation_runs logging', status: 'todo', notes: '~2h. The table exists and is unwired, which is exactly why lival-sync-daily could fail silently for six weeks. A silent automation failure is a P1 defect per PRD §14.2.' },
+                    { id: 'N-6', title: 'Reports charts', status: 'todo', notes: 'Deferred, not scheduled. Revisit only once the weekly review is actually feeding data. Recharts is ~6h and answers nothing the text panels do not.' }
+                ],
+                summary: 'Ships after daily use has started, not before.'
             }
         ];
 
