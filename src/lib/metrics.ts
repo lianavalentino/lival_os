@@ -1,4 +1,5 @@
-import { AppData, TaskStatus } from "../types";
+import { addDays, startOfWeek } from "date-fns";
+import { AppData, TaskStatus, TimeEntry } from "../types";
 
 export const taskStatusLabels: Record<TaskStatus, string> = {
   backlog: "Backlog",
@@ -32,6 +33,34 @@ export const dashboardMetrics = (data: AppData) => {
     newInboxCount: newInbox.length,
     activeProjectsCount: activeProjects.length,
     ideasCaptured: data.brainDumps.filter((entry) => entry.status === "captured").length,
+  };
+};
+
+const weekdayLabels = ["M", "T", "W", "T", "F", "S", "S"];
+
+/**
+ * Minutes logged in the week containing `reference`, bucketed Monday-first.
+ * Entries outside that week are excluded — the sidebar card claims "this week"
+ * and must not quietly show all time ever recorded.
+ */
+export const weeklyTime = (entries: TimeEntry[], reference: Date) => {
+  const start = startOfWeek(reference, { weekStartsOn: 1 });
+  const end = addDays(start, 7);
+
+  const minutes = new Array(7).fill(0);
+
+  for (const entry of entries) {
+    const startedAt = new Date(entry.startedAt);
+    if (startedAt < start || startedAt >= end) continue;
+    const dayIndex = Math.floor(
+      (startedAt.getTime() - start.getTime()) / (24 * 60 * 60 * 1000),
+    );
+    minutes[dayIndex] += entry.durationMinutes;
+  }
+
+  return {
+    days: weekdayLabels.map((label, index) => ({ label, minutes: minutes[index] })),
+    totalMinutes: minutes.reduce((sum: number, value: number) => sum + value, 0),
   };
 };
 

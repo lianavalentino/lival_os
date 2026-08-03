@@ -14,19 +14,42 @@ import {
 } from "lucide-react";
 import type { AppData, Task, TaskStatus, ViewKey } from "../types";
 
-export const navItems: Array<{ key: ViewKey; label: string; icon: typeof Home }> = [
-  { key: "command", label: "Command", icon: LayoutDashboard },
-  { key: "daily", label: "Daily", icon: CalendarDays },
-  { key: "weekly", label: "Weekly", icon: Target },
-  { key: "board", label: "Board", icon: KanbanSquare },
-  { key: "projects", label: "Projects", icon: FolderKanban },
-  { key: "inbox", label: "Inbox", icon: Inbox },
-  { key: "brain-dump", label: "Brain Dump", icon: Brain },
-  { key: "resources", label: "Resources", icon: Link2 },
-  { key: "reports", label: "Reports", icon: BarChart3 },
-  { key: "archive", label: "Archive", icon: Archive },
-  { key: "settings", label: "Settings", icon: Settings },
+export type NavItem = { key: ViewKey; label: string; icon: typeof Home };
+
+/**
+ * Sidebar composition per PRD §7.0. Project Detail and Task Detail are drill-ins,
+ * not nav entries, and are deliberately absent.
+ */
+export const navGroups: Array<{ label: string; items: NavItem[] }> = [
+  {
+    label: "Now",
+    items: [
+      { key: "command", label: "Command Center", icon: LayoutDashboard },
+      { key: "daily", label: "Daily", icon: CalendarDays },
+      { key: "weekly", label: "Weekly", icon: Target },
+    ],
+  },
+  {
+    label: "Work",
+    items: [
+      { key: "board", label: "Board", icon: KanbanSquare },
+      { key: "projects", label: "Projects", icon: FolderKanban },
+      { key: "inbox", label: "Inbox", icon: Inbox },
+      { key: "brain-dump", label: "Brain Dump", icon: Brain },
+      { key: "resources", label: "Resources", icon: Link2 },
+    ],
+  },
+  {
+    label: "Review",
+    items: [
+      { key: "reports", label: "Reports", icon: BarChart3 },
+      { key: "archive", label: "Archive", icon: Archive },
+      { key: "settings", label: "Settings", icon: Settings },
+    ],
+  },
 ];
+
+export const navItems: NavItem[] = navGroups.flatMap((group) => group.items);
 
 export const bottomNav = navItems.filter((item) =>
   ["command", "board", "projects", "inbox"].includes(item.key),

@@ -19,7 +19,7 @@ import {
   LocalDemoRepository,
   SupabaseRepository,
 } from "./lib/repository";
-import { dashboardMetrics } from "./lib/metrics";
+import { dashboardMetrics, weeklyTime } from "./lib/metrics";
 import { AuthGate } from "./components/AuthGate";
 import { LoadingScreen } from "./components/LoadingScreen";
 import { Sidebar } from "./components/Sidebar";
@@ -151,6 +151,12 @@ function LivalShell({
   }, [data.projects, data.tasks, selectedProjectId, selectedTaskId]);
 
   const metrics = useMemo(() => dashboardMetrics(data), [data]);
+  const thisWeek = useMemo(() => weeklyTime(data.timeEntries, new Date()), [data.timeEntries]);
+
+  const openCapture = (type?: CaptureDraft["type"]) => {
+    if (type) setDraft((current) => ({ ...current, type }));
+    setCaptureOpen(true);
+  };
   const selectedProject =
     data.projects.find((project) => project.id === selectedProjectId) ||
     data.projects[0];
@@ -283,11 +289,11 @@ function LivalShell({
       <Sidebar
         activeView={activeView}
         mobileNavOpen={mobileNavOpen}
-        totalMinutes={metrics.totalMinutes}
-        activeProjectsCount={metrics.activeProjectsCount}
+        weeklyMinutes={thisWeek.totalMinutes}
+        weeklyDays={thisWeek.days}
         onSelect={goTo}
         onCloseMobileNav={() => setMobileNavOpen(false)}
-        onOpenCapture={() => setCaptureOpen(true)}
+        onOpenCapture={openCapture}
       />
 
       <main className="main-shell">
