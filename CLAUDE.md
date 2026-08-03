@@ -53,6 +53,25 @@ them. Moved here from `~/Documents/LianaOS` on the same date.
 - `@supabase/supabase-js` v2.50+
 - lucide-react icons, date-fns
 
+## Blocked — read this before debugging anything
+
+**The Supabase project is paused (found 2026-08-03).** `nslookup
+mfcdzgkhmzppfctdzhwy.supabase.co` returns NXDOMAIN while `supabase.com` returns 200, and
+`supabase projects list` reports `status: INACTIVE`. Free-tier projects get paused after
+inactivity; this repo sat dormant for five weeks.
+
+Consequences, so nothing below is misread as broken code:
+
+- Database unreachable, all four edge functions down, sign-in cannot work
+- `supabase migration list` / `db push` fail on connection timeout, so migration 004 is
+  written and verified but **not applied**
+- Session hooks are failing their POST — **but nothing is lost.** They spool to
+  `~/.claude/lival-spool` and `ingest-time-entry` dedupes on `external_ref`. 17 sessions
+  were queued as of 2026-08-03.
+
+Fix: Supabase dashboard → `LIVAL_OS` → Restore, then `~/.claude/hooks/lival-replay-spool.sh`.
+Needs a browser login, so it cannot be scripted. Full sequence in `docs/DEPLOY.md` step 0.
+
 ## State
 - Branch: `main` (Phase 0/1 PRD alignment merged 2026-06-23; App.tsx component extraction merged 2026-06-23 via PR #2)
 - Supabase: connected. Migrations `001_lival_os_initial_schema.sql`, `002_add_planning_and_integration_tables.sql`, and `003_time_entries_external_ref_unique.sql` applied (001/002 dashboard-applied 2026-06-16, 003 applied via CLI). 6 new tables: task_updates, daily_plans, weekly_plans, automation_runs, integrations, file_changes; verified present.
