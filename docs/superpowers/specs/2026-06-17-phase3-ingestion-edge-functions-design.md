@@ -1,5 +1,10 @@
 # Phase 3 — Secure Ingestion via Supabase Edge Functions
 
+> **HISTORICAL — do not edit.** This is a dated decision record from the date above.
+> It describes what was decided and built *then*, not what is true now. It is kept
+> unmodified on purpose. For current scope see [`PRD.md`](../../../PRD.md); for current
+> build state see [`CLAUDE.md`](../../../CLAUDE.md).
+
 Date: 2026-06-17
 Status: Approved (design)
 Branch: TBD (create `feat/phase3-ingestion` for implementation)

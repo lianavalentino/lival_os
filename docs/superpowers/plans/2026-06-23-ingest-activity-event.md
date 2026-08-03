@@ -1,5 +1,10 @@
 # ingest-activity-event Implementation Plan
 
+> **HISTORICAL — do not edit.** This is a dated decision record from the date above.
+> It describes what was decided and built *then*, not what is true now. It is kept
+> unmodified on purpose. For current scope see [`PRD.md`](../../../PRD.md); for current
+> build state see [`CLAUDE.md`](../../../CLAUDE.md).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add `ingest-activity-event`, a fourth Supabase Edge Function, so external producers can write `activity_events` rows using the existing bearer-secret + service-role pattern.

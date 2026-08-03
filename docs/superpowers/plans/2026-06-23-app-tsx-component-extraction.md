@@ -1,5 +1,10 @@
 # App.tsx Component Extraction Implementation Plan
 
+> **HISTORICAL — do not edit.** This is a dated decision record from the date above.
+> It describes what was decided and built *then*, not what is true now. It is kept
+> unmodified on purpose. For current scope see [`PRD.md`](../../../PRD.md); for current
+> build state see [`CLAUDE.md`](../../../CLAUDE.md).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Split the 1754-line monolithic `src/App.tsx` into focused files under `src/components/*`, with zero behavior change. Closes kanban Phase 2 items 2-1, 2-2, 2-5, 2-6, 2-7, 2-10 (`docs/superpowers/kanban.html`) and the deferred extraction noted in `docs/superpowers/specs/2026-06-16-phase2-planning-tables-wiring-design.md:22`.

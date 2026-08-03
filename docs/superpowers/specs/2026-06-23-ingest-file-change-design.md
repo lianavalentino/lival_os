@@ -1,5 +1,10 @@
 # ingest-file-change Edge Function — Design
 
+> **HISTORICAL — do not edit.** This is a dated decision record from the date above.
+> It describes what was decided and built *then*, not what is true now. It is kept
+> unmodified on purpose. For current scope see [`PRD.md`](../../../PRD.md); for current
+> build state see [`CLAUDE.md`](../../../CLAUDE.md).
+
 Date: 2026-06-23
 Status: Approved (design) — written retroactively; implementation already shipped same day (commit `501b1e2`)
 Branch: none (direct to `main`, per size-based branch policy)

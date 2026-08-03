@@ -1,5 +1,10 @@
 # ingest-file-change Implementation Plan
 
+> **HISTORICAL — do not edit.** This is a dated decision record from the date above.
+> It describes what was decided and built *then*, not what is true now. It is kept
+> unmodified on purpose. For current scope see [`PRD.md`](../../../PRD.md); for current
+> build state see [`CLAUDE.md`](../../../CLAUDE.md).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 >
 > **Note:** written retroactively — every step below was already executed inline on 2026-06-23 (commit `501b1e2`). Checkboxes are marked `[x]` to reflect actual state, not as a template for re-execution.

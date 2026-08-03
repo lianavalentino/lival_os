@@ -1,5 +1,10 @@
 # n8n Gmail Capture Workflow — Design
 
+> **HISTORICAL — do not edit.** This is a dated decision record from the date above.
+> It describes what was decided and built *then*, not what is true now. It is kept
+> unmodified on purpose. For current scope see [`PRD.md`](../../../PRD.md); for current
+> build state see [`CLAUDE.md`](../../../CLAUDE.md).
+
 Date: 2026-06-24
 Status: Approved (design)
 Branch: `ingest-quick-capture` modification goes through the normal

@@ -1,7 +1,15 @@
 # LIVAL OS — CLAUDE.md
 
+**Canonical scope lives in [`PRD.md`](PRD.md).** This file covers build state, environment,
+and gotchas — the fast-moving half. `PRD.md` covers product, views, data model, and open
+work. Its §19 is the map of which docs are canonical, reference, or historical; read that
+before trusting anything in `docs/archive/`.
+
 ## Purpose
 Private personal operating system: daily orientation, task capture, project visibility, weekly evidence. Single-user, self-owned.
+
+**It is a daily-use ADHD tool, not a portfolio piece** (decided 2026-08-02). Features are
+judged on whether they reduce friction between a thought and a recorded action.
 
 **This repo is the only thing called LIVAL OS.** Two other systems shared the name until
 2026-08-02 — a `TASKS.md`→Notion→HTML-artifact pipeline in `~/Developer/`, and the
@@ -45,9 +53,12 @@ them. Moved here from `~/Documents/LianaOS` on the same date.
 - Superpowers tracking: interactive kanban board at `docs/superpowers/kanban.html` — drag-drop tasks, browser localStorage persistence, export/reset. Replaces static KANBAN.md.
 
 ## PRD Alignment
+- `PRD.md` (repo root, written 2026-08-02) is the single canonical PRD. It supersedes `LIVAL_OS_Codex_PRD_v1.md` (now `docs/archive/superseded-prds/`) and every PRD in `docs/archive/`. Reasoning behind its scope calls is in `docs/decisions/2026-08-02-scope-reset.md`.
+- `docs/LIVAL_OS_Frontend_Artifact_Spec_V4_1.md` stays in the active tree as widget-level layout **reference** only — it carries a banner listing where it diverges from `PRD.md`.
+- All 6 `specs/` and 7 `plans/` carry HISTORICAL banners. They are a dated, immutable decision log; never edit them to match current state.
 - Framework decision (2026-06-16): staying on Vite + React SPA — **not** porting to Next.js. Resolved per explicit instruction to preserve working code and make the smallest safe changes.
 - Every doc describing a Next.js + Tailwind + shadcn/ui + Vercel target was moved to `docs/archive/superseded-nextjs/` on 2026-08-02 — including the former `docs/CLAUDE.md`, which was being auto-loaded as authoritative and carried the wrong secret name. See that folder's README before reading anything in it.
-- The former `docs/PRD_Gap_Audit.md` is archived too. It is **not** a roadmap — its remediation phases assume the rejected Next.js port. Six of its matrix rows are still-real product gaps (Reports, Weekly Calendar, Board DnD, Resources filters, Project Detail tabs, Task Detail time widget) plus Risk #3 (client-side seed bootstrap); those are pending a scope decision, not yet boarded.
+- The former `docs/PRD_Gap_Audit.md` is archived too. It is **not** a roadmap — its remediation phases assume the rejected Next.js port. Its six real product gaps and Risk #3 (client-side seed bootstrap) were all decided on 2026-08-02 and are now tracked in `PRD.md` §17.
 - See `docs/superpowers/specs/2026-06-16-prd-phase0-1-alignment-design.md` for the Phase 0/1 design and `supabase/migrations/002_add_planning_and_integration_tables.sql` for the Phase 1 schema additions.
 - `docs/archive/prototype-2026-06/` holds the retired file→Notion→artifact generation, archived from `~/Developer/` where it had no version control.
 - Phase 2 data-layer wiring: see `docs/superpowers/specs/2026-06-16-phase2-planning-tables-wiring-design.md` and `docs/superpowers/plans/2026-06-16-phase2-planning-tables-wiring.md`. UI extraction of `src/App.tsx` into `src/components/*` — DONE 2026-06-23: see `docs/superpowers/plans/2026-06-23-app-tsx-component-extraction.md`; `App.tsx` 1754→419 lines, 19 files extracted under `src/components/`.

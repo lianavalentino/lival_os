@@ -1,5 +1,16 @@
 # LIVAL OS Frontend Artifact Specification
 
+> **REFERENCE — not canonical, not archived.** Kept in the active docs tree because §4–17
+> are still the best widget-level description of each page's layout, and two of them
+> (§8.7 Weekly Calendar, §12.5 Task Detail time widget) are the spec for work that is still
+> open in [`PRD.md`](../PRD.md) §17.
+>
+> Where this document and `PRD.md` disagree, **`PRD.md` wins.** Known divergences: the page
+> list here is twelve with Brain Dump and Resources separate (they are merged into "Brain");
+> Project Detail here has seven tabs (it has four); the areas listed here include Build Lab,
+> Home Ops, and Learning (they are gone); and "Cowork live artifact" framing is obsolete —
+> this is a deployed Vite SPA.
+
 **Artifact name:** LIVAL OS  
 **Artifact type:** Claude Cowork live artifact / interactive frontend dashboard  
 **Version:** Frontend V4.1 Final  
