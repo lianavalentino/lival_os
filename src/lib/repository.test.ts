@@ -1,5 +1,87 @@
 import { describe, it, expect } from "vitest";
-import { mapTaskUpdate, mapDailyPlan, mapWeeklyPlan } from "./repository";
+import type { SupabaseClient, User } from "@supabase/supabase-js";
+import {
+  SupabaseRepository,
+  mapTaskUpdate,
+  mapDailyPlan,
+  mapWeeklyPlan,
+} from "./repository";
+
+/**
+ * Records every operation issued against the Supabase client so a test can assert
+ * on what loadData() did to the database, not on how it was structured internally.
+ * Faked because it is a system boundary; nothing internal is mocked.
+ */
+function createRecordingClient(rowsByTable: Record<string, unknown[]> = {}) {
+  const ops: { table: string; op: string }[] = [];
+
+  const from = (table: string) => {
+    const record = (op: string) => {
+      ops.push({ table, op });
+      return chain;
+    };
+    const chain = {
+      select: () => record("select"),
+      insert: () => record("insert"),
+      upsert: () => record("upsert"),
+      update: () => record("update"),
+      delete: () => record("delete"),
+      order: () => chain,
+      eq: () => chain,
+      in: () => chain,
+      then: (resolve: (value: { data: unknown[]; error: null }) => unknown) =>
+        Promise.resolve({ data: rowsByTable[table] ?? [], error: null }).then(resolve),
+    };
+    return chain;
+  };
+
+  return { client: { from } as unknown as SupabaseClient, ops };
+}
+
+const testUser = {
+  id: "11111111-1111-4111-8111-111111111111",
+  email: "liana@example.com",
+  user_metadata: {},
+} as unknown as User;
+
+describe("SupabaseRepository.loadData", () => {
+  it("does not write to content tables", async () => {
+    const { client, ops } = createRecordingClient();
+
+    await new SupabaseRepository(client, testUser).loadData();
+
+    // profiles is upserted on purpose — that is the signed-in user's own row,
+    // not seed content. Everything else must be read-only on load.
+    const contentWrites = ops.filter((o) => o.op !== "select" && o.table !== "profiles");
+    expect(contentWrites).toEqual([]);
+  });
+
+  it("returns the areas the database holds", async () => {
+    const { client } = createRecordingClient({
+      areas: [
+        {
+          id: "area-consulting",
+          name: "Consulting",
+          description: "Client work",
+          color: "#8b5cf6",
+          sort_order: 1,
+        },
+      ],
+    });
+
+    const data = await new SupabaseRepository(client, testUser).loadData();
+
+    expect(data.areas).toEqual([
+      {
+        id: "area-consulting",
+        name: "Consulting",
+        description: "Client work",
+        color: "#8b5cf6",
+        sortOrder: 1,
+      },
+    ]);
+  });
+});
 
 describe("mapTaskUpdate", () => {
   it("maps snake_case row to camelCase", () => {
