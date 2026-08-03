@@ -14,7 +14,8 @@ describe("navGroups", () => {
     );
 
     expect(byLabel.Now).toEqual(["command", "daily", "weekly"]);
-    expect(byLabel.Work).toEqual(["board", "projects", "inbox", "brain-dump", "resources"]);
+    // Brain Dump and Resources are one entry — PRD §7.9.
+    expect(byLabel.Work).toEqual(["board", "projects", "inbox", "brain"]);
     expect(byLabel.Review).toEqual(["reports", "archive", "settings"]);
   });
 

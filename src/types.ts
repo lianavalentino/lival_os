@@ -240,8 +240,7 @@ export type ViewKey =
   | "project-detail"
   | "task-detail"
   | "inbox"
-  | "brain-dump"
-  | "resources"
+  | "brain"
   | "reports"
   | "archive"
   | "settings";

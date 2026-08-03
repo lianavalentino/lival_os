@@ -34,8 +34,7 @@ import { ProjectsView } from "./components/views/ProjectsView";
 import { ProjectDetail } from "./components/views/ProjectDetail";
 import { TaskDetail } from "./components/views/TaskDetail";
 import { InboxView } from "./components/views/InboxView";
-import { BrainDumpView } from "./components/views/BrainDumpView";
-import { ResourcesView } from "./components/views/ResourcesView";
+import { BrainView } from "./components/views/BrainView";
 import { ReportsView } from "./components/views/ReportsView";
 import { ArchiveView } from "./components/views/ArchiveView";
 import { SettingsView } from "./components/views/SettingsView";
@@ -388,8 +387,7 @@ function LivalShell({
                 onStatusChange={changeInboxStatus}
               />
             )}
-            {activeView === "brain-dump" && <BrainDumpView data={data} />}
-            {activeView === "resources" && <ResourcesView data={data} />}
+            {activeView === "brain" && <BrainView data={data} />}
             {activeView === "reports" && <ReportsView data={data} metrics={metrics} />}
             {activeView === "archive" && <ArchiveView data={data} />}
             {activeView === "settings" && (

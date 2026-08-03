@@ -120,6 +120,19 @@ a:focus-visible {
   font-size: 12px;
 }
 
+.review-list article a {
+  /* Saved resources carry full URLs; without this they push the card wider than
+     the phone viewport. */
+  overflow-wrap: anywhere;
+}
+
+.empty-note {
+  margin: 0;
+  padding: 18px 2px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
 .nav-groups {
   display: grid;
   gap: 14px;
