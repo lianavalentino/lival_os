@@ -5,3 +5,5 @@ dist
 .DS_Store
 *.tsbuildinfo
 .playwright-mcp
+.vercel
+.env*
