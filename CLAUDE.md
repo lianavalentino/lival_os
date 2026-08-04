@@ -149,8 +149,9 @@ GitHub Issues on `lianavalentino/lival_os`, via the `gh` CLI. See `docs/agents/i
 
 ### Triage labels
 
-The five canonical roles, unrenamed: `needs-triage`, `needs-info`, `ready-for-agent`,
-`ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+Matches `clients/italian-bistro` rather than the skill defaults: `ready-for-agent`,
+`backlog`, `needs:owner`, `wontfix`, plus `epic` / `epic:<slug>` / `area:<slug>` for
+structure. One vocabulary across every repo. See `docs/agents/triage-labels.md`.
 
 ### Domain docs
 
