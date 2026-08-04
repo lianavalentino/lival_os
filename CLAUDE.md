@@ -53,24 +53,38 @@ them. Moved here from `~/Documents/LianaOS` on the same date.
 - `@supabase/supabase-js` v2.50+
 - lucide-react icons, date-fns
 
-## Blocked — read this before debugging anything
+## If the app looks broken, check these two first
 
-**The Supabase project is paused (found 2026-08-03).** `nslookup
-mfcdzgkhmzppfctdzhwy.supabase.co` returns NXDOMAIN while `supabase.com` returns 200, and
-`supabase projects list` reports `status: INACTIVE`. Free-tier projects get paused after
-inactivity; this repo sat dormant for five weeks.
+Both cost hours on 2026-08-03. Neither is a code bug.
 
-Consequences, so nothing below is misread as broken code:
+**1. Is the Supabase project paused?** Free-tier projects pause after inactivity, and this one
+did after five weeks dormant. The tell is `nslookup mfcdzgkhmzppfctdzhwy.supabase.co`
+returning NXDOMAIN while `supabase.com` returns 200 — DNS is gone, not the network. The CLI
+reports `status: INACTIVE`. Everything downstream fails at once: database unreachable, all
+four edge functions down, sign-in impossible, `db push` timing out.
 
-- Database unreachable, all four edge functions down, sign-in cannot work
-- `supabase migration list` / `db push` fail on connection timeout, so migration 004 is
-  written and verified but **not applied**
-- Session hooks are failing their POST — **but nothing is lost.** They spool to
-  `~/.claude/lival-spool` and `ingest-time-entry` dedupes on `external_ref`. 17 sessions
-  were queued as of 2026-08-03.
+Fix is dashboard-only (`LIVAL_OS` → Restore), then drain the spool with
+`scripts/hooks/lival-replay-spool.sh`. Full sequence in `docs/DEPLOY.md` step 0.
 
-Fix: Supabase dashboard → `LIVAL_OS` → Restore, then `~/.claude/hooks/lival-replay-spool.sh`.
-Needs a browser login, so it cannot be scripted. Full sequence in `docs/DEPLOY.md` step 0.
+*Resolved 2026-08-03 — the project is live and migrations 001–004 are applied. Kept here
+because it will recur if the app goes unused again, and the symptom looks nothing like the
+cause.*
+
+**Nothing is lost while it is down.** The session hooks spool failed posts to
+`~/.claude/lival-spool` and `ingest-time-entry` dedupes on `external_ref`, so replay cannot
+double-count. 26 sessions queued during the outage and all replayed cleanly.
+
+**2. Are you signed in as the right account?** Every table is RLS'd to `user_id = auth.uid()`,
+so the wrong account renders a fully working app with zero rows — which reads as data loss. A
+stray second account was created by accident on 2026-08-03 and produced exactly that. Check
+before debugging anything that looks like missing data:
+
+```bash
+supabase db query --linked -o table "select u.email, (select count(*) from public.areas a where a.user_id=u.id) as areas from auth.users u order by u.created_at"
+```
+
+`supabase db query --linked` is generally the fastest diagnostic here — it bypasses RLS and
+needs no dashboard login. Reads only; writes are yours to run.
 
 ## State
 - Branch: `main` (Phase 0/1 PRD alignment merged 2026-06-23; App.tsx component extraction merged 2026-06-23 via PR #2)
@@ -126,6 +140,27 @@ New API key format (`sb_publishable_...`) also available in dashboard → Settin
 - `brain_dumps` — Siri Shortcuts
 - `time_entries` — Claude Code / Codex time capture
 - `activity_events` — event log for weekly evidence
+
+## Agent skills
+
+### Issue tracker
+
+GitHub Issues on `lianavalentino/lival_os`, via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Matches `clients/italian-bistro` rather than the skill defaults: `ready-for-agent`,
+`backlog`, `needs:owner`, `wontfix`, plus `epic` / `epic:<slug>` / `area:<slug>` for
+structure. One vocabulary across every repo. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `CONTEXT.md` at the root, ADRs in `docs/adr/`. See `docs/agents/domain.md`.
+
+**`docs/adr/` and `docs/decisions/` are not the same thing and must not merge.** An ADR is one
+reversible decision, numbered, written when it is made. `docs/decisions/` holds dated
+session-level records covering many decisions at once — `2026-08-02-scope-reset.md` is the
+only one. If a decision belongs to exactly one question, it is an ADR.
 
 ## Dev commands
 ```bash
