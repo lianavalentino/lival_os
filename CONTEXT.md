@@ -98,9 +98,23 @@ The point at which building stops and daily use starts. A set of conditions, not
 Any external system that writes into LIVAL OS through an ingestion endpoint. Producers are
 never authoritative and never read application state back.
 
+**Projection**:
+A read-only, one-way export of application state onto an external surface — the Vault's
+daily dashboard section, the iMessage status summary. Never authoritative, never written
+back; an edit made to a projected copy is not data. A single channel is either a Producer
+or a Projection, never both.
+_Avoid_: Mirror, sync, feed
+
 **System of record**:
 Supabase Postgres, exclusively. No markdown file, no spreadsheet, and no Notion database
 ever holds authoritative state.
+
+**Vault**:
+The external narrative-memory store — an Obsidian vault of plain markdown on the Mac, in
+its own private repo. Holds distillates of what happened and why: daily notes, call notes,
+project pages. Never holds Tasks, pre-triage content, or authoritative state; it reaches
+LIVAL OS only as a Producer and reads from it only through Projections.
+_Avoid_: Second brain, memory hub, notes app
 
 **Silent failure**:
 A scheduled job that stops working without saying so. Treated as a defect of the highest
