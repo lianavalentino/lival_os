@@ -17,5 +17,5 @@ session_dir="${LIVAL_SESSION_DIR:-/tmp/lival-sessions}"
 spool_dir="${LIVAL_SPOOL_DIR:-$HOME/.claude/lival-spool}"
 base_url="${LIVAL_INGEST_URL:-https://mfcdzgkhmzppfctdzhwy.supabase.co/functions/v1}"
 
-lival_beat_and_post "$sid" "$session_dir" "$spool_dir" "$base_url"
+lival_beat_and_post "$sid" "$session_dir" "$spool_dir" "$base_url" "claude_code"
 exit 0

@@ -18,7 +18,7 @@ lival_iso() { # lival_iso <epoch>
   date -u -r "$1" +%Y-%m-%dT%H:%M:%SZ
 }
 
-# lival_beat_and_post <sid> <session_dir> <spool_dir> <base_url>
+# lival_beat_and_post <sid> <session_dir> <spool_dir> <base_url> [source]
 #
 # Advances the session's accumulated time by the gap since its last beat,
 # capped at LIVAL_HEARTBEAT_CAP_SECONDS, then posts the running total keyed by
@@ -27,12 +27,18 @@ lival_iso() { # lival_iso <epoch>
 # recording yet, and a session that never crosses a minute should never
 # create a row.
 #
+# <source> tags the posted payload's producer ("claude_code", "codex", ...)
+# and defaults to "claude_code" so existing callers that predate the #9
+# parameterization keep behaving exactly as before. Callers should pass it
+# explicitly rather than rely on the default going forward — see
+# lival-heartbeat.sh and lival-codex-heartbeat.sh.
+#
 # Duration only ever moves upward for a given session: this function never
 # computes a smaller total than what is already on disk, and the endpoint
 # separately refuses to lower a stored duration — so a spooled beat replayed
 # after a later beat has already landed cannot regress it.
 lival_beat_and_post() {
-  local sid="$1" session_dir="$2" spool_dir="$3" base_url="$4"
+  local sid="$1" session_dir="$2" spool_dir="$3" base_url="$4" source="${5:-claude_code}"
   local statefile="$session_dir/$sid"
   [ -f "$statefile" ] || return 0
 
@@ -53,7 +59,7 @@ lival_beat_and_post() {
 
   local started_iso payload code
   started_iso=$(lival_iso "$start_epoch")
-  payload="{\"started_at\":\"$started_iso\",\"duration_minutes\":$minutes,\"source\":\"claude_code\",\"external_ref\":\"$sid\"}"
+  payload="{\"started_at\":\"$started_iso\",\"duration_minutes\":$minutes,\"source\":\"$source\",\"external_ref\":\"$sid\"}"
 
   code=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
     --connect-timeout 5 --max-time 10 \
