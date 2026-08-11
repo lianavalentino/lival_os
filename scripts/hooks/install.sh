@@ -8,7 +8,7 @@ set -euo pipefail
 src=$(cd "$(dirname "$0")" && pwd)
 dest="$HOME/.claude/hooks"
 mkdir -p "$dest" "$HOME/.claude/lival-spool"
-for f in lival-session-start.sh lival-session-end.sh lival-replay-spool.sh; do
+for f in lival-session-start.sh lival-session-end.sh lival-heartbeat.sh lival-heartbeat-lib.sh lival-replay-spool.sh; do
   cp "$src/$f" "$dest/$f"
   chmod +x "$dest/$f"
   echo "installed $dest/$f"

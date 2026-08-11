@@ -259,6 +259,7 @@ export const seedData: AppData = {
       durationMinutes: 95,
       description: "Schema and app architecture",
       source: "manual",
+      unreliable: false,
     },
     {
       id: "time-2",
@@ -271,6 +272,7 @@ export const seedData: AppData = {
       durationMinutes: 70,
       description: "Calculator assumptions review",
       source: "codex",
+      unreliable: false,
     },
     {
       id: "time-3",
@@ -283,6 +285,7 @@ export const seedData: AppData = {
       durationMinutes: 35,
       description: "Buffer routing notes",
       source: "manual",
+      unreliable: false,
     },
   ],
   inboxItems: [

@@ -17,10 +17,9 @@ export const dashboardMetrics = (data: AppData) => {
   const active = data.tasks.filter((task) => task.status !== "done");
   const blocked = data.tasks.filter((task) => task.status === "blocked");
   const highPriority = active.filter((task) => task.priority === "high");
-  const totalMinutes = data.timeEntries.reduce(
-    (sum, entry) => sum + entry.durationMinutes,
-    0,
-  );
+  const totalMinutes = data.timeEntries
+    .filter((entry) => !entry.unreliable)
+    .reduce((sum, entry) => sum + entry.durationMinutes, 0);
   const newInbox = data.inboxItems.filter((item) => item.status === "new");
   const activeProjects = data.projects.filter((project) => project.status === "active");
 
@@ -41,7 +40,8 @@ const weekdayLabels = ["M", "T", "W", "T", "F", "S", "S"];
 /**
  * Minutes logged in the week containing `reference`, bucketed Monday-first.
  * Entries outside that week are excluded — the sidebar card claims "this week"
- * and must not quietly show all time ever recorded.
+ * and must not quietly show all time ever recorded. Unreliable entries
+ * (ADR-0003: pre-heartbeat wall-clock durations) are excluded too, by default.
  */
 export const weeklyTime = (entries: TimeEntry[], reference: Date) => {
   const start = startOfWeek(reference, { weekStartsOn: 1 });
@@ -50,6 +50,7 @@ export const weeklyTime = (entries: TimeEntry[], reference: Date) => {
   const minutes = new Array(7).fill(0);
 
   for (const entry of entries) {
+    if (entry.unreliable) continue;
     const startedAt = new Date(entry.startedAt);
     if (startedAt < start || startedAt >= end) continue;
     const dayIndex = Math.floor(
@@ -75,5 +76,5 @@ export const tasksByStatus = (data: AppData) =>
 
 export const projectTime = (data: AppData, projectId: string) =>
   data.timeEntries
-    .filter((entry) => entry.projectId === projectId)
+    .filter((entry) => entry.projectId === projectId && !entry.unreliable)
     .reduce((sum, entry) => sum + entry.durationMinutes, 0);

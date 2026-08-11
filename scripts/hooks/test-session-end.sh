@@ -35,10 +35,15 @@ check() { # check <name> <expected> <actual>
   if [ "$2" = "$3" ]; then echo "ok   - $1"; else echo "FAIL - $1: expected '$2' got '$3'"; fails=$((fails+1)); fi
 }
 
-run_hook() { # run_hook <sid> <minutes-ago>; sets up the start file, runs the hook, echoes its exit code
+# run_hook <sid> <minutes-ago>; seeds a state file whose last beat was
+# <minutes-ago> minutes ago with nothing yet accumulated — a session that
+# reached session-end without a single Stop-hook beat in between, so the
+# final beat is the only interval there is. Runs the hook, echoes exit code.
+run_hook() {
   sid="$1"; ago="$2"
   mkdir -p "$tmp/sessions" "$tmp/spool"
-  echo $(( $(date +%s) - ago * 60 )) > "$tmp/sessions/$sid"
+  local start; start=$(( $(date +%s) - ago * 60 ))
+  printf '%s\n%s\n%s\n' "$start" "$start" 0 > "$tmp/sessions/$sid"
   LIVAL_SESSION_DIR="$tmp/sessions" LIVAL_SPOOL_DIR="$tmp/spool" \
     LIVAL_INGEST_URL="http://127.0.0.1:$port" LIVAL_INGEST_SECRET=test \
     bash "$here/lival-session-end.sh" <<< "{\"session_id\":\"$sid\"}" 2>/dev/null
@@ -58,7 +63,7 @@ rc=$(run_hook fail-500 30)
 check "500 exits 0"              "0"   "$rc"
 check "500 removes start file"   "no"  "$(exists "$tmp/sessions/fail-500")"
 check "500 spools payload"       "yes" "$(exists "$tmp/spool/fail-500.json")"
-check "spooled body has minutes" "30"       "$(/usr/bin/python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["duration_minutes"])' "$tmp/spool/fail-500.json")"
+check "spooled body has minutes, capped at fifteen" "15" "$(/usr/bin/python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["duration_minutes"])' "$tmp/spool/fail-500.json")"
 check "spooled body has ref"     "fail-500" "$(/usr/bin/python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["external_ref"])' "$tmp/spool/fail-500.json")"
 
 echo 401 > "$status_file"
@@ -67,7 +72,8 @@ check "401 exits 0"        "0"   "$rc"
 check "401 spools payload" "yes" "$(exists "$tmp/spool/fail-401.json")"
 
 mkdir -p "$tmp/sessions" "$tmp/spool"
-echo $(( $(date +%s) - 1800 )) > "$tmp/sessions/unreachable"
+unreach_start=$(( $(date +%s) - 1800 ))
+printf '%s\n%s\n%s\n' "$unreach_start" "$unreach_start" 0 > "$tmp/sessions/unreachable"
 LIVAL_SESSION_DIR="$tmp/sessions" LIVAL_SPOOL_DIR="$tmp/spool" \
   LIVAL_INGEST_URL="http://127.0.0.1:9" LIVAL_INGEST_SECRET=test \
   bash "$here/lival-session-end.sh" <<< '{"session_id":"unreachable"}' 2>/dev/null

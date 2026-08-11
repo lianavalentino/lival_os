@@ -1,8 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { weeklyTime } from "./metrics";
-import type { TimeEntry } from "../types";
+import { dashboardMetrics, projectTime, weeklyTime } from "./metrics";
+import type { AppData, TimeEntry } from "../types";
 
-const entry = (startedAt: string, durationMinutes: number): TimeEntry => ({
+const entry = (
+  startedAt: string,
+  durationMinutes: number,
+  overrides: Partial<TimeEntry> = {},
+): TimeEntry => ({
   id: `t-${startedAt}-${durationMinutes}`,
   areaId: "a1",
   workspaceId: "w1",
@@ -10,6 +14,8 @@ const entry = (startedAt: string, durationMinutes: number): TimeEntry => ({
   durationMinutes,
   description: "work",
   source: "claude_code",
+  unreliable: false,
+  ...overrides,
 });
 
 // Reference week: Mon 2026-07-27 .. Sun 2026-08-02.
@@ -49,5 +55,52 @@ describe("weeklyTime", () => {
 
     expect(result.totalMinutes).toBe(0);
     expect(result.days.every((d) => d.minutes === 0)).toBe(true);
+  });
+
+  it("excludes unreliable entries by default (ADR-0003: pre-heartbeat wall-clock)", () => {
+    const result = weeklyTime(
+      [
+        entry("2026-07-27T09:00:00", 60), // Mon, reliable
+        entry("2026-07-27T10:00:00", 5904, { unreliable: true }), // Mon, the four-day fiction
+      ],
+      wednesday,
+    );
+
+    expect(result.totalMinutes).toBe(60);
+    expect(result.days[0].minutes).toBe(60);
+  });
+});
+
+describe("dashboardMetrics", () => {
+  const baseData = {
+    tasks: [],
+    inboxItems: [],
+    projects: [],
+    brainDumps: [],
+  } as unknown as AppData;
+
+  it("excludes unreliable entries from the total", () => {
+    const result = dashboardMetrics({
+      ...baseData,
+      timeEntries: [entry("2026-07-27T09:00:00", 30), entry("2026-07-27T10:00:00", 5904, { unreliable: true })],
+    });
+
+    expect(result.totalMinutes).toBe(30);
+  });
+});
+
+describe("projectTime", () => {
+  it("excludes unreliable entries from a project's total", () => {
+    const result = projectTime(
+      {
+        timeEntries: [
+          entry("2026-07-27T09:00:00", 30, { projectId: "p1" }),
+          entry("2026-07-27T10:00:00", 5904, { projectId: "p1", unreliable: true }),
+        ],
+      } as AppData,
+      "p1",
+    );
+
+    expect(result).toBe(30);
   });
 });
