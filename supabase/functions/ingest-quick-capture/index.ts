@@ -9,6 +9,16 @@ const handler = createQuickCaptureHandler({
   secret: env.secret,
   userId: env.userId,
   db: {
+    async findByExternalRef(userId: string, ref: string) {
+      const { data, error } = await client
+        .from("inbox_items")
+        .select("id, status")
+        .eq("user_id", userId)
+        .eq("external_ref", ref)
+        .maybeSingle();
+      if (error) throw error;
+      return data ? { id: data.id as string, status: data.status as string } : null;
+    },
     async insertInboxItem(row: InboxRow) {
       const { data, error } = await client
         .from("inbox_items")

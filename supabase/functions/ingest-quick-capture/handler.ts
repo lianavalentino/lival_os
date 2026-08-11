@@ -13,6 +13,7 @@ export const quickCaptureSchema = z.object({
   suggested_workspace_id: z.string().uuid().optional(),
   suggested_project_id: z.string().uuid().optional(),
   confidence: z.number().min(0).max(1).optional(),
+  external_ref: z.string().optional(),
 });
 
 export type QuickCaptureInput = z.infer<typeof quickCaptureSchema>;
@@ -29,6 +30,7 @@ export interface InboxRow {
   suggested_workspace_id: string | null;
   suggested_project_id: string | null;
   confidence: number | null;
+  external_ref: string | null;
   status: "new";
 }
 
@@ -45,11 +47,13 @@ export function toInboxRow(input: QuickCaptureInput, userId: string): InboxRow {
     suggested_workspace_id: input.suggested_workspace_id ?? null,
     suggested_project_id: input.suggested_project_id ?? null,
     confidence: input.confidence ?? null,
+    external_ref: input.external_ref ?? null,
     status: "new",
   };
 }
 
 export interface QuickCaptureDb {
+  findByExternalRef(userId: string, ref: string): Promise<{ id: string; status: string } | null>;
   insertInboxItem(row: InboxRow): Promise<{ id: string; status: string }>;
 }
 
@@ -78,6 +82,10 @@ export function createQuickCaptureHandler(deps: QuickCaptureDeps) {
       return jsonResponse({ error: "validation", issues: parsed.error.issues }, 400);
     }
     try {
+      if (parsed.data.external_ref) {
+        const existing = await deps.db.findByExternalRef(deps.userId, parsed.data.external_ref);
+        if (existing) return jsonResponse({ id: existing.id, status: existing.status }, 200);
+      }
       const result = await deps.db.insertInboxItem(toInboxRow(parsed.data, deps.userId));
       return jsonResponse({ id: result.id, status: result.status }, 201);
     } catch (e) {

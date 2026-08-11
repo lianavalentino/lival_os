@@ -4,11 +4,14 @@ import { createQuickCaptureHandler, toInboxRow, quickCaptureSchema, type InboxRo
 const SECRET = "test-secret";
 const USER = "user-123";
 
-function fakeDb(captured: InboxRow[]) {
+function fakeDb(captured: InboxRow[], opts: { existing?: { id: string; status: string } | null } = {}) {
   return {
     insertInboxItem(row: InboxRow) {
       captured.push(row);
       return Promise.resolve({ id: "inbox-1", status: row.status });
+    },
+    findByExternalRef(_userId: string, _ref: string) {
+      return Promise.resolve(opts.existing ?? null);
     },
   };
 }
@@ -34,8 +37,17 @@ Deno.test("toInboxRow: applies defaults and status new", () => {
     suggested_workspace_id: null,
     suggested_project_id: null,
     confidence: null,
+    external_ref: null,
     status: "new",
   });
+});
+
+Deno.test("toInboxRow: includes external_ref when present", () => {
+  const row = toInboxRow(
+    quickCaptureSchema.parse({ title: "Hi", external_ref: "call-abc-123" }),
+    USER,
+  );
+  assertEquals(row.external_ref, "call-abc-123");
 });
 
 Deno.test("toInboxRow: maps suggested_* fields and confidence when provided", () => {
@@ -53,6 +65,7 @@ Deno.test("toInboxRow: maps suggested_* fields and confidence when provided", ()
   assertEquals(row.suggested_workspace_id, "d47bf23f-c8b0-4861-849d-e4d5dd8d72cb");
   assertEquals(row.suggested_project_id, "3f23f3b3-2637-4a50-a074-9ed18333fe87");
   assertEquals(row.confidence, 0.92);
+  assertEquals(row.external_ref, null);
 });
 
 Deno.test("handler: 401 on wrong secret", async () => {
@@ -106,4 +119,34 @@ Deno.test("handler: 201 inserts row with suggested_* fields and confidence when 
   assertEquals(captured[0].suggested_workspace_id, null);
   assertEquals(captured[0].suggested_project_id, null);
   assertEquals(captured[0].confidence, 0.8);
+});
+
+Deno.test("handler: 200 returns existing row on duplicate external_ref (no insert)", async () => {
+  const db = {
+    insertInboxItem: () => {
+      throw new Error("Should not be called");
+    },
+    findByExternalRef: (_userId: string, _ref: string) =>
+      Promise.resolve({ id: "inbox-old", status: "new" }),
+  };
+  const handler = createQuickCaptureHandler({ secret: SECRET, userId: USER, db });
+  const res = await handler(post({ title: "Call notes", external_ref: "call-xyz-123" }));
+  assertEquals(res.status, 200);
+  assertEquals(await res.json(), { id: "inbox-old", status: "new" });
+});
+
+Deno.test("handler: 201 inserts when external_ref is new", async () => {
+  const captured: InboxRow[] = [];
+  const db = {
+    insertInboxItem(row: InboxRow) {
+      captured.push(row);
+      return Promise.resolve({ id: "inbox-new", status: row.status });
+    },
+    findByExternalRef: () => Promise.resolve(null),
+  };
+  const handler = createQuickCaptureHandler({ secret: SECRET, userId: USER, db });
+  const res = await handler(post({ title: "New call", external_ref: "call-abc-456" }));
+  assertEquals(res.status, 201);
+  assertEquals(await res.json(), { id: "inbox-new", status: "new" });
+  assertEquals(captured[0].external_ref, "call-abc-456");
 });
