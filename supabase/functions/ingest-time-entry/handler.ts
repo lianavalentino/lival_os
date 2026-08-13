@@ -42,8 +42,9 @@ export function toTimeEntryRow(input: TimeEntryInput, userId: string): TimeEntry
 }
 
 export interface TimeEntryDb {
-  findByExternalRef(userId: string, ref: string): Promise<{ id: string } | null>;
+  findByExternalRef(userId: string, ref: string): Promise<{ id: string; duration_minutes: number } | null>;
   insertTimeEntry(row: TimeEntryRow): Promise<{ id: string }>;
+  updateDuration(id: string, durationMinutes: number): Promise<{ id: string }>;
 }
 
 export interface TimeEntryDeps {
@@ -73,7 +74,12 @@ export function createTimeEntryHandler(deps: TimeEntryDeps) {
     try {
       if (parsed.data.external_ref) {
         const existing = await deps.db.findByExternalRef(deps.userId, parsed.data.external_ref);
-        if (existing) return jsonResponse({ id: existing.id }, 200);
+        if (existing) {
+          if (parsed.data.duration_minutes > existing.duration_minutes) {
+            await deps.db.updateDuration(existing.id, parsed.data.duration_minutes);
+          }
+          return jsonResponse({ id: existing.id }, 200);
+        }
       }
       const result = await deps.db.insertTimeEntry(toTimeEntryRow(parsed.data, deps.userId));
       return jsonResponse({ id: result.id }, 201);

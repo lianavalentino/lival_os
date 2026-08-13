@@ -555,6 +555,9 @@ const text = (value: unknown, fallback = "") =>
 const numberValue = (value: unknown, fallback = 0) =>
   typeof value === "number" ? value : Number(value ?? fallback);
 
+const boolValue = (value: unknown, fallback = false) =>
+  typeof value === "boolean" ? value : fallback;
+
 const textArray = (value: unknown) =>
   Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 
@@ -614,7 +617,7 @@ const mapTask = (row: DbRow): Task => ({
   source: text(row.source) as Task["source"],
 });
 
-const mapTimeEntry = (row: DbRow): TimeEntry => ({
+export const mapTimeEntry = (row: DbRow): TimeEntry => ({
   id: text(row.id),
   areaId: text(row.area_id),
   workspaceId: text(row.workspace_id),
@@ -625,6 +628,7 @@ const mapTimeEntry = (row: DbRow): TimeEntry => ({
   durationMinutes: numberValue(row.duration_minutes),
   description: text(row.description),
   source: text(row.source) as TimeEntry["source"],
+  unreliable: boolValue(row.unreliable),
 });
 
 const mapInboxItem = (row: DbRow): InboxItem => ({

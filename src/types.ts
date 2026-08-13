@@ -93,6 +93,7 @@ export interface TimeEntry {
   durationMinutes: number;
   description: string;
   source: "manual" | "codex" | "claude_code" | "shortcut" | "imported";
+  unreliable: boolean;
 }
 
 export interface InboxItem {
