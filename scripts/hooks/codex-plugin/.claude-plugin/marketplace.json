@@ -1,0 +1,17 @@
+{
+  "name": "lival-time-tracking",
+  "owner": {
+    "name": "Liana Valentino"
+  },
+  "metadata": {
+    "description": "LIVAL OS Codex-side time-tracking hook registration (issue #9)."
+  },
+  "plugins": [
+    {
+      "name": "lival-codex-heartbeat",
+      "version": "1.0.0",
+      "source": "./plugin",
+      "description": "Registers Codex's session-start and turn-stop events against the shared LIVAL OS heartbeat hooks, so Codex sessions record worked time the same way Claude Code sessions do."
+    }
+  ]
+}

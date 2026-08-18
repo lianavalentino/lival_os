@@ -1,0 +1,6 @@
+{
+  "name": "lival-codex-heartbeat",
+  "version": "1.0.0",
+  "description": "Registers Codex's session-start and turn-stop events against the shared LIVAL OS heartbeat hooks, so Codex sessions record worked time the same way Claude Code sessions do.",
+  "hooks": "./hooks/codex-hooks.json"
+}

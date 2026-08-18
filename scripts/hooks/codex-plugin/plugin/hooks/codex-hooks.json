@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CODEX_HOME:-$HOME/.codex}/hooks/lival-session-start.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CODEX_HOME:-$HOME/.codex}/hooks/lival-codex-heartbeat.sh\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

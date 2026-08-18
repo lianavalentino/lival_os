@@ -20,7 +20,7 @@ session_dir="${LIVAL_SESSION_DIR:-/tmp/lival-sessions}"
 spool_dir="${LIVAL_SPOOL_DIR:-$HOME/.claude/lival-spool}"
 base_url="${LIVAL_INGEST_URL:-https://mfcdzgkhmzppfctdzhwy.supabase.co/functions/v1}"
 
-lival_beat_and_post "$sid" "$session_dir" "$spool_dir" "$base_url"
+lival_beat_and_post "$sid" "$session_dir" "$spool_dir" "$base_url" "claude_code"
 # The state file's job ends here whether the post succeeded, failed, or was
 # never sent (sub-minute) — a failure already lives on safely in the spool,
 # keyed by session id, independent of this file.
