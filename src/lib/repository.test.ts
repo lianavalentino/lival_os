@@ -5,6 +5,7 @@ import {
   mapTaskUpdate,
   mapDailyPlan,
   mapWeeklyPlan,
+  mapTimeEntry,
 } from "./repository";
 
 /**
@@ -103,6 +104,34 @@ describe("mapTaskUpdate", () => {
       metadata: { k: "v" },
       createdAt: "2026-06-16T00:00:00Z",
     });
+  });
+});
+
+describe("mapTimeEntry", () => {
+  it("maps the unreliable flag (ADR-0003 pre-heartbeat backfill)", () => {
+    const flagged = mapTimeEntry({
+      id: "e1",
+      area_id: "a1",
+      workspace_id: "w1",
+      started_at: "2026-08-01T00:00:00Z",
+      duration_minutes: 5904,
+      description: "",
+      source: "claude_code",
+      unreliable: true,
+    });
+    expect(flagged.unreliable).toBe(true);
+
+    const reliable = mapTimeEntry({
+      id: "e2",
+      area_id: "a1",
+      workspace_id: "w1",
+      started_at: "2026-08-12T00:00:00Z",
+      duration_minutes: 15,
+      description: "",
+      source: "claude_code",
+      unreliable: false,
+    });
+    expect(reliable.unreliable).toBe(false);
   });
 });
 
